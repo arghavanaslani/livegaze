@@ -96,7 +96,7 @@ def video_feed():
     return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/video_feedـmapped')
+@app.route('/video_feed_mapped')
 def video_feed_mapped():
     """Video streaming route. Put this in the src attribute of an img tag."""
     return Response(gen_mapped(Camera()),
