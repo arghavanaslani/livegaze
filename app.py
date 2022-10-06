@@ -50,7 +50,8 @@ def gen(camera):
     """Video streaming generator function."""
     yield b'--frame\r\n'
     while True:
-        frame = camera.get_frame()
+        # frame = camera.get_frame()
+        frame, gaze = camera.frames()
         yield b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n--frame\r\n'
 
 #mapped
