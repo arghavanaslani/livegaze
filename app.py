@@ -51,7 +51,7 @@ def gen(camera):
     yield b'--frame\r\n'
     while True:
         # frame = camera.get_frame()
-        frame, gaze = camera.get_frames()
+        frame, gaze = camera.get_frame()
         yield b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n--frame\r\n'
 
 #mapped
@@ -61,7 +61,7 @@ def gen_mapped(camera):
 
     while True:
 
-        frame, gaze = camera.get_frames()
+        frame, gaze = camera.get_frame()
         image = frame.bgr_pixels
         img_copy = copy.deepcopy(image)
         img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
