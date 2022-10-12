@@ -30,4 +30,4 @@ class Camera(BaseCamera):
             #start_time = time.time()
             frame, gaze = Camera.video_source.receive_matched_scene_video_frame_and_gaze()
             image = frame.bgr_pixels
-            yield (cv.imencode('.jpg', image)[1].tobytes(), gaze)
+            yield (image, gaze)
