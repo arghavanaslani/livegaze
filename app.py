@@ -52,6 +52,7 @@ def gen(camera):
     while True:
         # frame = camera.get_frame()
         frame, gaze = camera.get_frame()
+        cv.imencode('.jpg', frame)[1].tobytes()
         yield b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n--frame\r\n'
 
 #mapped
@@ -87,7 +88,7 @@ def gen_mapped(camera):
             color=(0, 0, 255),
             thickness=10,
         )
-
+        cv.imencode('.jpg', mapped_image)[1].tobytes()
         yield b'Content-Type: image/jpeg\r\n\r\n' + mapped_image + b'\r\n--frame\r\n'
 
 
