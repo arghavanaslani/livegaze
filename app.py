@@ -51,6 +51,7 @@ def gen(camera):
     yield b'--frame\r\n'
     while True:
         frame, gaze = camera.get_frame()
+        image = frame.bgr_pixels
         cv.imencode('.jpg', frame)[1].tobytes()
         yield b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n--frame\r\n'
 
@@ -62,8 +63,8 @@ def gen_mapped(camera):
     while True:
 
         frame, gaze = camera.get_frame()
-        image = frame.bgr_pixels
-        img_copy = copy.deepcopy(image)
+        
+        img_copy = copy.deepcopy(frame)
         img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
 
         tags = at_detector.detect(
