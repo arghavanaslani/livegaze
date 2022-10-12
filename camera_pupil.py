@@ -18,6 +18,7 @@ class Camera(BaseCamera):
     def set_video_source():
         print("Looking for a device")
         Camera.video_source = Device("pi.local", 8080)
+        # Camera.video_source = discover_one_device(max_search_duration_seconds=10)
         if Camera.video_source is None:
             print("No device found.")
             raise SystemExit(-1)
