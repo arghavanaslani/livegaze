@@ -51,9 +51,8 @@ def gen(camera):
     yield b'--frame\r\n'
     while True:
         frame, gaze = camera.get_frame()
-        image = frame.bgr_pixels
-        cv.imencode('.jpg', frame)[1].tobytes()
-        yield b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n--frame\r\n'
+        image = cv.imencode('.jpg', frame)[1].tobytes()
+        yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
 #mapped
 def gen_mapped(camera):
@@ -61,9 +60,7 @@ def gen_mapped(camera):
     yield b'--frame\r\n'
 
     while True:
-
         frame, gaze = camera.get_frame()
-        
         img_copy = copy.deepcopy(frame)
         img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
 
@@ -77,7 +74,7 @@ def gen_mapped(camera):
             continue
 
         mapped_image, mapped_gaze = perspective_mapper(
-            tags, image, gaze, maxWidth=500, maxHeight=400)
+            tags, frame, gaze, maxWidth=500, maxHeight=400)
 
         #print(mapped_gaze)
         cv.circle(
@@ -88,8 +85,8 @@ def gen_mapped(camera):
             color=(0, 0, 255),
             thickness=10,
         )
-        cv.imencode('.jpg', mapped_image)[1].tobytes()
-        yield b'Content-Type: image/jpeg\r\n\r\n' + mapped_image + b'\r\n--frame\r\n'
+        image = cv.imencode('.jpg', mapped_image)[1].tobytes()
+        yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
 
 @app.route('/video_feed')
