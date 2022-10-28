@@ -89,9 +89,10 @@ def gen_mapped(camera):
         yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
 
-@app.route('/video_feed')
-def video_feed():
+@app.route('/video_feed/<phone_id>')
+def video_feed(phone_id):
     """Video streaming route. Put this in the src attribute of an img tag."""
+    Camera.set_video_source(phone_id)
     return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
