@@ -6,6 +6,7 @@ import copy
 import time
 from flask import Flask, render_template, Response
 from pupil_apriltags import Detector
+from pupil_labs.realtime_api.simple import discover_devices
 from utils import *
 
 # import camera driver
@@ -13,6 +14,14 @@ if os.environ.get('CAMERA'):
     Camera = import_module('camera_' + os.environ['CAMERA']).Camera
 else:
     from camera import Camera
+
+all_cameras_dict = {}
+all_camera_phone_ids = []
+devices = discover_devices(search_duration_seconds=10.0)
+for d in devices:
+
+    all_camera_phone_ids.append(d.phone_id)
+    all_cameras_dict[d.phone_id] = d
 
 at_detector = Detector(
     families='tag36h11',
