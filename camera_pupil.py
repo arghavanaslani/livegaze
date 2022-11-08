@@ -9,28 +9,25 @@ import time
 class Camera(BaseCamera):
     video_source = None
 
-    def __init__(self):
-        self.set_video_source()
-        super(Camera, self).__init__()
+    def __init__(self, camera_device = None):
+        self.set_video_source(camera_device)
+        super(Camera, self).__init__(camera_device.phone_id)
 
 
     @staticmethod
-    def set_video_source(phone_ip):
-        print("Looking for a device")
-        # Camera.video_source = Device("pi.local", 8080)
-        # devicesFound = discover_devices(10)
-        device1 = Device(phone_ip, 8080)
-        Camera.video_source = discover_devices(10)
+    def set_video_source(camera_device = None):
+        print(f"Connecting to {camera_device}...")      
+        Camera.video_source = camera_device
         if Camera.video_source is None:
             print("No device found.")
             raise SystemExit(-1)
-        print(f"Connecting to {Camera.video_source}...")      
+        print(f"Successful! Platform is connected to {Camera.video_source}...")      
 
 
     @staticmethod
     def frames():
         while True:
-            #start_time = time.time()
+            start_time = time.time()
             frame, gaze = Camera.video_source.receive_matched_scene_video_frame_and_gaze()
             image = frame.bgr_pixels
             yield (image, gaze)
