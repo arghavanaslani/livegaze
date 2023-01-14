@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<title>Home Page</title>
+<div class="topnav" id="myTopnav">
+  <a href="#home" class="active">Home</a>
+  <a href="scene.html">Scene View</a>
+  <a href="transformed.html">Transformed View</a>
+  <a href="livcanv.html">Living Canvas</a>
+  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+    <i class="fa fa-bars"></i>
+  </a>
+</div>
+
+
+
+<section class="container">
+  <form class="myForm">
+    <h1>Add Stimulus</h1>
+    <div class="form-left-col">
+      <label for="myFile">Upload image:</label>
+      <input type="file" id="myFile" name="filename">
+    </div>
+    <div class="form-right-col">
+      <label for="tagId">Insert tag Ids:</label>
+      <input type="number" id="ulId" name="upLeft" placeholder="Up Left">
+      <input type="number" id="urId" name="upRight" placeholder="Up Right">
+      <input type="number" id="drId" name="downRight" placeholder="Down Right">
+      <input type="number" id="dlId" name="downLeft" placeholder="Down Left">
+    </div>
+    <input type="submit" value="Submit">
+  </form>
+
+  <ul id="simuli-list">
+
+  </ul>
+</section>
+
+
+
+
+
+<script src = 'main.js'></script>
+
+</body>
+</html>

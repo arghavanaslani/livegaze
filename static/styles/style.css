@@ -1,0 +1,162 @@
+* {
+    box-sizing: border-box;
+  }
+
+body {
+margin: 0;
+font-family: Arial, Helvetica, sans-serif;
+background-color: whitesmoke;
+}
+
+.topnav {
+overflow: hidden;
+background-color: #333;
+}
+
+.topnav a {
+float: left;
+display: block;
+color: #f2f2f2;
+text-align: center;
+padding: 14px 16px;
+text-decoration: none;
+font-size: 17px;
+}
+
+.topnav a:hover {
+background-color: #ddd;
+color: black;
+}
+
+.topnav a.active {
+background-color: orange;
+color: black;
+}
+
+.topnav .icon {
+display: none;
+}
+
+@media screen and (max-width: 600px) {
+.topnav a:not(:first-child) {display: none;}
+.topnav a.icon {
+    float: right;
+    display: block;
+}
+}
+
+@media screen and (max-width: 600px) {
+.topnav.responsive {position: relative;}
+.topnav.responsive .icon {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+.topnav.responsive a {
+    float: none;
+    display: block;
+    text-align: left;
+}
+}
+
+/* form */
+
+.container{
+    border-radius: 5px;
+    background-color: #dcdcdc;
+    padding: 20px;
+    margin: 5% 25%;
+    position: absolute;
+}
+
+.myForm h1{
+    color: black;
+    margin: 0;
+    padding: 15px;
+    border-bottom: 1px solid black;
+}
+.myForm label{
+    font-weight: bold;
+}
+
+.form-left-col {
+    padding: 5%;
+    float: left;
+    width: 48%;
+    box-sizing: border-box;
+    border-radius: 4px;
+  }
+
+.form-right-col {
+    /* background-color: #ffefd5; */
+    padding: 5%;
+    padding-bottom: 12%;
+    float: right;
+    width: 48%;
+    box-sizing: border-box;
+    border-radius: 4px;
+  }
+
+input[type=number], select {
+    width: 80%;
+    padding: 12px 20px;
+    margin: 10px 0;
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type=file], select {
+    width: 80%;
+    margin: 20px 0;
+    display: block;
+    padding: 12px 20px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    }
+
+input[type=submit] {
+    background-color: #2e8b57;
+    color: white;
+    margin: 10px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 20%;
+    padding: 12px 20px;
+    position: relative;
+    left: 20px;
+    top: 100px;
+}
+
+input[type=submit]:hover {
+background-color:  #2e8b56de;
+width: 20%;
+padding: 12px 20px;
+}
+
+
+
+/* Create four equal columns that floats next to each other */
+.column {
+    border-right: 1px solid white;
+  float: left;
+  width: 25%;
+  padding: 1%;
+  height: 315px; /* Should be removed. Only for demonstration */
+}
+
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+/* img {
+    margin: 25px;
+}
+
+img:hover {
+    box-shadow:  10px 5px 5px grey;
+  } */
