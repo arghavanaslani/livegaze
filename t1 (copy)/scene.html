@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<title>Scene View</title>
+<div class="topnav" id="myTopnav">
+  <a href="index.html">Home</a>
+  <a href="scene.html" class="active">Scene View</a>
+  <a href="transformed.html">Transformed View</a>
+  <a href="livcanv.html">Living Canvas</a>
+  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+  </a>
+</div>
+
+
+<div class="row">
+  <div class="column">
+    <a target="_blank" href="img2.jpg">
+      <!-- <img src="img2.jpg" alt="Scene View" width="250px"> -->
+      <img src="{{ url_for('video_feed', id='0') }}" alt="Scene View" width="500" height="500">
+    </a>
+  </div>
+  <div class="column">
+    <h4>Phone ID: ...</h4>
+    <h4>Phone IP: ...</h4>
+    <h4>Phone name: ...</h4>
+    <h4>Battery Level: ...</h4>
+    <h4>Phone Storage: ...</h4>
+  </div>
+  <!-- <div class="column">
+    <a target="_blank" href="img2.jpg">
+      <img src="img2.jpg" alt="Scene View" width="250px">
+    </a>
+  </div>
+  <div class="column">
+    <h4>Phone ID: ...</h4>
+    <h4>Phone IP: ...</h4>
+    <h4>Phone name: ...</h4>
+    <h4>Battery Level: ...</h4>
+    <h4>Phone Storage: ...</h4>
+  </div> -->
+</div>
+
+
+<!-- <div class="row">
+  <div class="column">
+    <a target="_blank" href="img2.jpg">
+      <img src="img2.jpg" alt="Scene View" width="250px">
+    </a>
+  </div> -->
+  <!-- <div class="column">
+    <h4>Phone ID: ...</h4>
+    <h4>Phone IP: ...</h4>
+    <h4>Phone name: ...</h4>
+    <h4>Battery Level: ...</h4>
+    <h4>Phone Storage: ...</h4>
+  </div> -->
+  <!-- <div class="column" >
+    <a target="_blank" href="img2.jpg">
+      <img src="img2.jpg" alt="Scene View" width="250px">
+    </a>
+  </div> -->
+  <!-- <div class="column">
+    <h4>Phone ID: ...</h4>
+    <h4>Phone IP: ...</h4>
+    <h4>Phone name: ...</h4>
+    <h4>Battery Level: ...</h4>
+    <h4>Phone Storage: ...</h4>
+  </div> -->
+<!-- </div> -->
+
+
+</body>
+</html>
