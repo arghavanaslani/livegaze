@@ -1,0 +1,148 @@
+body {
+    font-family: "Lato", sans-serif;
+}
+
+.sidebar {
+height: 100%;
+width: 0;
+position: fixed;
+z-index: 1;
+top: 0;
+left: 0;
+background-color: #111;
+overflow-x: hidden;
+transition: 0.5s;
+padding-top: 60px;
+}
+
+.sidebar a {
+padding: 8px 8px 8px 32px;
+text-decoration: none;
+font-size: 25px;
+color: #818181;
+display: block;
+transition: 0.3s;
+}
+
+.sidebar a:hover {
+color: #f1f1f1;
+}
+
+.sidebar .closebtn {
+position: absolute;
+top: 0;
+right: 25px;
+font-size: 36px;
+margin-left: 50px;
+}
+
+.openbtn {
+font-size: 20px;
+cursor: pointer;
+background-color: black;
+color: white;
+padding: 10px 15px;
+border: none;
+}
+
+.openbtn:hover {
+background-color: #444;
+}
+
+#main {
+transition: margin-left .5s;
+padding: 0;
+}
+  
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+/* @media screen and (max-height: 450px) {
+    .sidebar {padding-top: 15px;}
+    .sidebar a {font-size: 18px;}
+} */
+
+
+    /* LEFT AND RIGHT COLUMN PICTURES */
+.split {
+    height: 100%;
+    width: 50%;
+    position: fixed;
+    z-index: 0;
+    top: 70px;
+    overflow-x: hidden;
+    padding-top: 0;
+}
+
+.left {
+    left: 0;
+}
+
+.right {
+    right: 0;
+}
+
+.container {
+    position: relative;
+    padding: 0;
+    text-align: center;
+    padding: 10px;
+}
+
+/* OVERLAY ON PICTURES */
+.image-trans {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.image-world {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.overlay {
+    text-align: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    transition: .5s ease;
+}
+
+.container:hover .overlay {
+    opacity: 2;
+}
+
+.text {
+    color: white;
+    background-color: black;
+    font-size: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+hr.line {
+    position: static;
+    border-top: 1px solid black;
+    border-radius: 1px;
+  }
+
+.list{
+    color: grey;
+    padding: 2px;
+    padding-left: 50px;
+    
+}
