@@ -33,25 +33,25 @@ print(cameras)
 
 @app.route('/', methods=["GET"])
 def index():
-    return render_template('index.html')
+    return render_template('demo.html', camera_ids = number_of_cameras)
 
 
-@app.route('/scene')
-def scene():
-    """world view page"""
-    return render_template("scene.html", camera_ids = number_of_cameras)
+# @app.route('/scene')
+# def scene():
+#     """world view page"""
+#     return render_template("scene.html", camera_ids = number_of_cameras)
 
 
-@app.route('/transformed')
-def transformed():
-    """Mapped view page"""
-    return render_template("transformed.html", camera_ids = number_of_cameras)
+# @app.route('/transformed')
+# def transformed():
+#     """Mapped view page"""
+#     return render_template("transformed.html", camera_ids = number_of_cameras)
 
 
-@app.route('/livcanv')
-def livcanv():
-    """Living canvas"""
-    return render_template("livcanv.html")
+# @app.route('/livcanv')
+# def livcanv():
+#     """Living canvas"""
+#     return render_template("livcanv.html")
 
 
 @app.route('/main.js')
