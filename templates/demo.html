@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- <link rel= "stylesheet"href= "demostyle.css"> -->
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/demostyle.css') }}">
+</head>
+
+
+<body>
+
+<div id="mySidebar" class="sidebar">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+  <a href="#">Add</a>
+  <li class="list">Participant</li>
+  <li class="list">Stimulus</li>
+  <li class="list">Experiment</li>
+  <a href="#">Dashboard</a>
+  <a href="#">Help</a>
+</div>
+
+<div id="main">
+    <div class="topnav">
+        <button class="openbtn" onclick="openNav()">☰ Open</button>
+        <hr class="line">
+      </div>
+  
+  <!-- WORLD VIEW THUMBNAILS -->
+  <div class="split left">
+    {%for camera_id in range(0, camera_ids)%}
+    <div class="container">
+      <img src="{{ url_for('video_feed', id='{}'.format(camera_id) ) }}" alt="Scene View" class="image-world" width="300px" height="300px">
+      <div class="overlay">
+        <div class="text">
+          <h4 id = "ID"> ID: {{camera_id}} </h4>
+          <h4 id = "phone_name_{{camera_id}}"></h4>
+          <h4 id = "battery_level_{{camera_id}}"></h4>
+        </div>
+      </div>
+    </div> 
+    <script>
+      var eventSource = new EventSource("{{ url_for('devices_info_feed', id='{}'.format(camera_id)) }}")
+      eventSource.addEventListener("device_info", function(e) {
+  
+        data = JSON.parse(e.data)
+        console.log(data)
+        document.querySelector("#phone_name_{{camera_id}}").innerText = "Name: " + data.phone_name
+        document.querySelector("#battery_level_{{camera_id}}").innerText = "Battery: " + data.battery_level + "%"
+      }, true)
+  
+    </script>
+  {%endfor%}
+  </div>
+
+
+  <!-- TRANSFORMED VIEW THUMBNAILS -->
+  <div class="split right">
+    {%for camera_id in range(0, camera_ids)%}
+    <div class="container">
+        <img id="painting_{{camera_id}}".format() src="{{ url_for('static',filename='/image1.png') }}" alt="Scene View" class="image-trans">
+        <div class="overlay">
+          <div class="text"> 
+            <h4 id = "ID"> ID: {{camera_id}} </h4>
+            <h4 id = "mapped_x_{{camera_id}}"></h4>
+            <h4 id = "mapped_y_{{camera_id}}"></h4>
+          </div>
+      </div>
+    </div>
+    <script>
+      var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id)) }}")
+      eventSource.addEventListener("mapped_gaze", function(e) {
+      
+          data = JSON.parse(e.data)
+      
+          document.querySelector("#mapped_x_{{camera_id}}").innerText = "mapped X: " + data.x
+          document.querySelector("#mapped_y_{{camera_id}}").innerText = "mapped Y: " + data.y
+      
+          var img = document.getElementById("painting_{{camera_id}}");
+          var cnvs = document.getElementById("painting_canvas_{{camera_id}}");
+      
+          cnvs.style.position = "absolute";
+          cnvs.style.left = img.offsetLeft + "px";
+          cnvs.style.top = img.offsetTop + "px";
+          cnvs.style.width = img.offsetWidth + "px";
+          cnvs.style.height = img.offsetHeight + "px";
+      
+          var ctx = cnvs.getContext("2d");
+          ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+          ctx.beginPath();
+      
+          let x = (data.x /400) * 300
+          let y = (data.y /300) * 150
+          ctx.arc(x, y, 20, 0, 2 * Math.PI, false);
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#00ff00';
+          ctx.stroke();   }, true);   
+    </script>   
+    {%endfor%}
+  </div>
+  
+
+
+
+</div>
+
+<script>
+function openNav() {
+  document.getElementById("mySidebar").style.width = "200px";
+  document.getElementById("main").style.marginLeft = "200px";
+}
+
+function closeNav() {
+  document.getElementById("mySidebar").style.width = "0";
+  document.getElementById("main").style.marginLeft= "0";
+}
+</script>
+   
+</body>
+</html> 
