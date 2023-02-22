@@ -32,9 +32,9 @@
       <img src="{{ url_for('video_feed', id='{}'.format(camera_id) ) }}" alt="Scene View" class="image-world" width="300px" height="300px">
       <div class="overlay">
         <div class="text">
-          <h4 id = "ID"> ID: {{camera_id}} </h4>
-          <h4 id = "phone_name_{{camera_id}}"></h4>
-          <h4 id = "battery_level_{{camera_id}}"></h4>
+          <p id = "ID"> ID: {{camera_id}} </p>
+          <p id = "phone_name_{{camera_id}}"></p>
+          <p id = "battery_level_{{camera_id}}"></p>
         </div>
       </div>
     </div> 
@@ -55,29 +55,35 @@
 
   <!-- TRANSFORMED VIEW THUMBNAILS -->
   <div class="split right">
+
     {%for camera_id in range(0, camera_ids)%}
+
     <div class="container">
-        <img id="painting_{{camera_id}}".format() src="{{ url_for('static',filename='/image1.png') }}" alt="Scene View" class="image-trans">
+        <img id="painting_{{camera_id}}".format() src="{{ url_for('static',filename='/image1.png') }}" alt="Transformed View" class="image-trans">
         <div class="overlay">
           <div class="text"> 
-            <h4 id = "ID"> ID: {{camera_id}} </h4>
-            <h4 id = "mapped_x_{{camera_id}}"></h4>
-            <h4 id = "mapped_y_{{camera_id}}"></h4>
+            <p id = "ID"> ID: {{camera_id}} </p>
+            <p id = "mapped_x_{{camera_id}}"></p>
+            <p id = "mapped_y_{{camera_id}}"></p>
           </div>
       </div>
     </div>
+
     <script>
       var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id)) }}")
       eventSource.addEventListener("mapped_gaze", function(e) {
       
-          data = JSON.parse(e.data)
+          data = JSON.parse(e.data);
       
-          document.querySelector("#mapped_x_{{camera_id}}").innerText = "mapped X: " + data.x
-          document.querySelector("#mapped_y_{{camera_id}}").innerText = "mapped Y: " + data.y
+          document.querySelector("#mapped_x_{{camera_id}}").innerText = "transformed X: " + data.x;
+          document.querySelector("#mapped_y_{{camera_id}}").innerText = "transformed Y: " + data.y;
       
           var img = document.getElementById("painting_{{camera_id}}");
-          var cnvs = document.getElementById("painting_canvas_{{camera_id}}");
+          var cnvs = document.createElement("canvas");
+          cnvs.id = "painting_canvas_{{camera_id}}";
+          img.parentElement.appendChild(cnvs);
       
+          var imgRect = img.getBoundingClientRect();
           cnvs.style.position = "absolute";
           cnvs.style.left = img.offsetLeft + "px";
           cnvs.style.top = img.offsetTop + "px";
@@ -88,12 +94,13 @@
           ctx.clearRect(0, 0, cnvs.width, cnvs.height);
           ctx.beginPath();
       
-          let x = (data.x /400) * 300
-          let y = (data.y /300) * 150
-          ctx.arc(x, y, 20, 0, 2 * Math.PI, false);
-          ctx.lineWidth = 3;
-          ctx.strokeStyle = '#00ff00';
-          ctx.stroke();   }, true);   
+          let x = (data.x /1200) * 424;
+          let y = (data.y /849) * 300;
+          ctx.arc(x, y, 15, 0, 2 * Math.PI, false);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#ff0000';
+          ctx.stroke();
+        }, true);   
     </script>   
     {%endfor%}
   </div>
