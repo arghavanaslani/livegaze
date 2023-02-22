@@ -102,8 +102,8 @@ def get_mapped_gaze(tags, gaze):
     # maxHeight = max(int(height_AB), int(height_CD))
     input_pts = np.float32([pt_A, pt_B, pt_C, pt_D])
 
-    maxHeight = 300
-    maxWidth = 400
+    maxHeight = 849
+    maxWidth = 1200
 
     output_pts = np.float32([[0, 0],
                             [0, maxHeight - 1],
