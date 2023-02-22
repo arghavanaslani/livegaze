@@ -21,7 +21,7 @@ cameras = discover_devices(search_duration_seconds=5.0)
 
 number_of_cameras = len(cameras)
 
-print(number_of_cameras)
+print(number_of_cameras , " device(s) connected.")
 
 frame_of_each_camera = [None] * number_of_cameras
 gaze_of_each_camera = [None] * number_of_cameras
@@ -54,9 +54,9 @@ def index():
 #     return render_template("livcanv.html")
 
 
-@app.route('/main.js')
-def script():
-    return render_template('main.js')
+# @app.route('/main.js')
+# def script():
+#     return render_template('main.js')
 
 @app.route('/devices_info/<string:id>/')
 def devices_info_feed(id):
@@ -135,7 +135,7 @@ def gen_mapped_gaze(camera_id):
         finally:
             sem.release()
             if(len(tags) == 4):
-                print("4 april tags is detected camera id: " + str(camera_id) )
+                print("4 april tags are detected camera id: " + str(camera_id) )
                 mapped_gaze = get_mapped_gaze(tags, gaze)
                 gaze_data = json.dumps({"x":mapped_gaze[0], "y":mapped_gaze[1]})
                 print(gaze_data)
