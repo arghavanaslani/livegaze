@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Participant List</title>
+	<style type="text/css">
+
+		body {
+    		font-family: "Lato", sans-serif;
+		}
+		.container {
+			display: flex;
+			margin: 20px;
+			padding: 20px;
+			background-color: #f5f5f5;
+			border-radius: 8px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+		}
+		.table-container {
+			flex-basis: 60%;
+			padding-right: 20px;
+			box-sizing: border-box;
+		}
+		.form-container {
+			flex-basis: 40%;
+			box-sizing: border-box;
+		}
+		table {
+			border-collapse: collapse;
+			width: 100%;
+			text-align: center;
+		}
+		table th, table td {
+			padding: 8px;
+			border: 1px solid #ddd;
+		}
+		form {
+			margin-top: 20px;
+		}
+		form label, form input[type="submit"], form select {
+			display: block;
+			margin-bottom: 10px;
+			width: 100%;
+			box-sizing: border-box;
+			padding: 8px;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+		}
+		form input[type="submit"] {
+			background-color: #fff;
+			color: #000;
+			cursor: pointer;
+			transition: background-color 0.3s ease-in-out;
+		}
+		form input[type="submit"]:hover {
+			background-color: #000;
+			color: #fff;
+		}
+	</style>
+</head>
+<body>
+	<h1>Participant List</h1>
+	<div class="container">
+		<div class="table-container">
+			<table>
+				<thead>
+					<tr>
+						<th>Participant ID</th>
+						<th>Age</th>
+						<th>Gender</th>
+						<th>Education</th>
+					</tr>
+				</thead>
+
+				<tbody id="participant-list">
+					<!-- Participant rows will be added dynamically using JavaScript -->
+				</tbody>
+			</table>
+		</div>
+		<div class="form-container">
+			<form id="add-participant-form">
+				<label for="age">Age:</label>
+				<input type="number" id="age" name="age" required>
+				<label for="gender">Gender:</label>
+				<select id="gender" name="gender" required>
+					<option value="">--Select--</option>
+					<option value="Male">Male</option>
+					<option value="Female">Female</option>
+					<option value="Other">Other</option>
+				</select>
+				<label for="education">Education:</label> <!-- New line to add education field -->
+				<select id="education" name="education" required> <!-- New line to add education field -->
+					<option value="">--Select--</option>
+					<option value="Did not attend school">Did not attend school</option>
+					<option value="Primary school">Primary school</option>
+					<option value="Secondary school">Secondary school</option>
+					<option value="High school">High school</option>
+					<option value="College degree">College degree</option>
+					<option value="Other">Other</option>
+					<option value="Rather not say">Rather not say</option>
+				</select> <!-- New line to add education field -->
+				<input type="submit" value="Add Participant">
+			</form>			
+		</div>
+	</div>
+	<script type="text/javascript">
+		var participantList = [];
+		var participantTableBody = document.getElementById("participant-list");
+
+		function renderParticipantTable() {
+			participantTableBody.innerHTML = "";
+			participantList.forEach(function(participant, index) {
+				var row = participantTableBody.insertRow();
+				row.insertCell().innerHTML = index;
+				row.insertCell().innerHTML = participant.age;
+				row.insertCell().innerHTML = participant.gender;
+				row.insertCell().innerHTML = participant.education;
+			});
+		}
+
+		function addParticipant(event) {
+			event.preventDefault();
+			var age = document.getElementById("age").value;
+			var gender = document.getElementById("gender").value;
+			var education = document.getElementById("education").value;
+			participantList.push({
+				age: age,
+				gender: gender,
+				education: education 
+			});
+			renderParticipantTable();
+			document.getElementById("add-participant-form").reset();
+		}
+
+		document.getElementById("add-participant-form").addEventListener("submit", addParticipant);
+	</script>
+</body>
+</html>
