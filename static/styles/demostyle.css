@@ -16,7 +16,7 @@ padding-top: 60px;
 }
 
 .sidebar a {
-padding: 8px 8px 8px 32px;
+padding: 8px 8px 8px 20px;
 text-decoration: none;
 font-size: 25px;
 color: #818181;
@@ -47,12 +47,12 @@ border: none;
 
 .openbtn:hover {
 background-color: #444;
-}
+} 
 
 #main {
 transition: margin-left .5s;
 padding: 0;
-}
+} 
   
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
 /* @media screen and (max-height: 450px) {
@@ -66,7 +66,7 @@ padding: 0;
     height: 100%;
     width: 50%;
     position: fixed;
-    z-index: 0;
+    /* z-index: 0; */
     top: 70px;
     overflow-x: hidden;
     padding-top: 0;
@@ -85,15 +85,17 @@ padding: 0;
     padding: 0;
     text-align: center;
     padding: 10px;
+    width: 100%;
+    height: auto;
+
 }
 
 /* OVERLAY ON PICTURES */
 .image-trans {
     display: block;
+    display: block;
     width: 100%;
     height: auto;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .image-world {
@@ -115,11 +117,11 @@ padding: 0;
     width: 100%;
     opacity: 0;
     transition: .5s ease;
-}
+} 
 
 .container:hover .overlay {
     opacity: 2;
-}
+} 
 
 .text {
     color: white;
@@ -134,17 +136,27 @@ padding: 0;
     text-align: center;
     opacity: 0.8;
     padding: 5%;
-}
+} 
 
-hr.line {
+ hr.line {
     position: static;
     border-top: 1px solid black;
     border-radius: 1px;
   }
 
-.list{
-    color: grey;
-    padding: 2px;
-    padding-left: 50px;
-    
+  .list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    font-size: 25px;
+  } 
+
+  canvas {
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 1; 
 }
