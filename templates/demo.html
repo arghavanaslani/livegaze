@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- <link rel= "stylesheet"href= "demostyle.css"> -->
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/demostyle.css') }}">
 </head>
 
@@ -11,10 +10,13 @@
 
 <div id="mySidebar" class="sidebar">
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-  <a href="#">Add</a>
-  <li class="list">Participant</li>
-  <li class="list">Stimulus</li>
-  <li class="list">Experiment</li>
+  <a>Add</a>
+  <ul>
+    <li class="list"><a href="participant.html" target="_blank">Participant</a></li>
+    <li class="list"><a href="stimulus.html" target="_blank">Stimulus</a></li>
+    <li class="list"><a href="experiment.html" target="_blank">Experiment</a></li>
+    <li class="list"><a href="transformed1.html" target="_blank">Transformed</a></li>
+  </ul>
   <a href="#">Dashboard</a>
   <a href="#">Help</a>
 </div>
@@ -29,7 +31,7 @@
   <div class="split left">
     {%for camera_id in range(0, camera_ids)%}
     <div class="container">
-      <img src="{{ url_for('video_feed', id='{}'.format(camera_id) ) }}" alt="Scene View" class="image-world" width="300px" height="300px">
+      <img src="{{ url_for('video_feed', id='{}'.format(camera_id) ) }}" alt="Scene View" class="image-world" width="30px" height="30px">
       <div class="overlay">
         <div class="text">
           <p id = "ID"> ID: {{camera_id}} </p>
@@ -54,11 +56,12 @@
 
 
   <!-- TRANSFORMED VIEW THUMBNAILS -->
-  <div class="split right">
+  <!-- <div class="split right">
 
     {%for camera_id in range(0, camera_ids)%}
 
     <div class="container">
+        <canvas id='painting_canvas_{{camera_id}}'></canvas>
         <img id="painting_{{camera_id}}".format() src="{{ url_for('static',filename='/image1.png') }}" alt="Transformed View" class="image-trans">
         <div class="overlay">
           <div class="text"> 
@@ -67,60 +70,65 @@
             <p id = "mapped_y_{{camera_id}}"></p>
           </div>
       </div>
-    </div>
+    </div> -->
 
     <script>
-      var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id)) }}")
-      eventSource.addEventListener("mapped_gaze", function(e) {
       
-          data = JSON.parse(e.data);
-      
-          document.querySelector("#mapped_x_{{camera_id}}").innerText = "transformed X: " + data.x;
-          document.querySelector("#mapped_y_{{camera_id}}").innerText = "transformed Y: " + data.y;
-      
-          var img = document.getElementById("painting_{{camera_id}}");
-          var cnvs = document.createElement("canvas");
-          cnvs.id = "painting_canvas_{{camera_id}}";
-          img.parentElement.appendChild(cnvs);
-      
-          var imgRect = img.getBoundingClientRect();
-          cnvs.style.position = "absolute";
-          cnvs.style.left = img.offsetLeft + "px";
-          cnvs.style.top = img.offsetTop + "px";
-          cnvs.style.width = img.offsetWidth + "px";
-          cnvs.style.height = img.offsetHeight + "px";
-      
-          var ctx = cnvs.getContext("2d");
-          ctx.clearRect(0, 0, cnvs.width, cnvs.height);
-          ctx.beginPath();
-      
-          let x = (data.x /1200) * 424;
-          let y = (data.y /849) * 300;
-          ctx.arc(x, y, 15, 0, 2 * Math.PI, false);
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = '#ff0000';
-          ctx.stroke();
-        }, true);   
-    </script>   
-    {%endfor%}
-  </div>
-  
+      // var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id)) }}")
 
+      // eventSource.addEventListener("mapped_gaze", function(e) {
+      
+      //     data = JSON.parse(e.data);
+      
+      //     document.querySelector("#mapped_x_{{camera_id}}").innerText = "transformed X: " + data.x;
+      //     document.querySelector("#mapped_y_{{camera_id}}").innerText = "transformed Y: " + data.y;
+      //     if (cnvs.img === img){
+      //       parentElement.removeChild(cnvs);
+      //     }
+      //     var img = document.getElementById("painting_{{camera_id}}");
+      //     var cnvs = document.getElementById("painting_canvas_{{camera_id}}");
+      //     var cnvs = document.createElement("canvas");
+      //     cnvs.id = "painting_canvas_{{camera_id}}";
+      //     img.parentElement.appendChild(cnvs);
+      
+          // var imgRect = img.getBoundingClientRect();
+          // cnvs.style.position = "absolute";
+          // cnvs.style.left = img.offsetLeft + "px";
+          // cnvs.style.top = img.offsetTop + "px";
+          // cnvs.style.width = img.offsetWidth + "px";
+          // cnvs.style.height = img.offsetHeight + "px";
+      
+          // var ctx = cnvs.getContext("2d");
+          // ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+          // ctx.beginPath();
+      
+          // let x = (data.x /1200) * 424;
+          // let y = (data.y /849) * 300;
 
+          // 1200 & 849 --> image pixels 
+          // 371 & 262 --> canvas size (inspect)
+          // let x = (data.x /1200) * 371;
+          // let y = (data.y /849) * 262;
 
+        //   ctx.arc(x, y, 15, 0, 2 * Math.PI, false);
+        //   ctx.lineWidth = 2;
+        //   ctx.strokeStyle = '#ff0000';
+        //   ctx.stroke();
+        // }, true); 
+
+      function openNav() {
+        document.getElementById("mySidebar").style.width = "220px";
+        document.getElementById("main").style.marginLeft = "220px";
+      }
+
+      function closeNav() {
+        document.getElementById("mySidebar").style.width = "0";
+        document.getElementById("main").style.marginLeft= "0";
+      }  
+    </script>
+    <!-- {%endfor%} -->
 </div>
 
-<script>
-function openNav() {
-  document.getElementById("mySidebar").style.width = "200px";
-  document.getElementById("main").style.marginLeft = "200px";
-}
-
-function closeNav() {
-  document.getElementById("mySidebar").style.width = "0";
-  document.getElementById("main").style.marginLeft= "0";
-}
-</script>
    
 </body>
 </html> 
