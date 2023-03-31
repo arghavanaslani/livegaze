@@ -35,24 +35,22 @@ print(cameras)
 def index():
     return render_template('demo.html', camera_ids = number_of_cameras)
 
+@app.route('/participant.html')
+def participant():
+    return render_template("participant.html")
 
-# @app.route('/scene')
-# def scene():
-#     """world view page"""
-#     return render_template("scene.html", camera_ids = number_of_cameras)
-
-
-# @app.route('/transformed')
-# def transformed():
-#     """Mapped view page"""
-#     return render_template("transformed.html", camera_ids = number_of_cameras)
+@app.route('/stimulus.html')
+def stimulus():
+    return render_template("stimulus.html")
 
 
-# @app.route('/livcanv')
-# def livcanv():
-#     """Living canvas"""
-#     return render_template("livcanv.html")
+@app.route('/experiment.html')
+def experiment():
+    return render_template("experiment.html")
 
+@app.route('/transformed1.html')
+def transformed1():
+    return render_template('transformed1.html', camera_ids = number_of_cameras)
 
 # @app.route('/main.js')
 # def script():
@@ -130,7 +128,7 @@ def gen_mapped_gaze(camera_id):
                 tag_size=None,
         )
         except:
-            print("Error in April tags detection")
+            print("No Apriltag Detected")
         
         finally:
             sem.release()
