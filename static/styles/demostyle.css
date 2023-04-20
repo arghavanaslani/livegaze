@@ -2,6 +2,10 @@ body {
     font-family: "Lato", sans-serif;
 }
 
+body {
+    font-family: "Lato", sans-serif;
+  }
+  
 .sidebar {
 height: 100%;
 width: 0;
@@ -14,13 +18,28 @@ overflow-x: hidden;
 transition: 0.5s;
 padding-top: 60px;
 }
+  
+.sidebar h2 {
+color: #fff;
+padding-left: 20px;
+}
+  
+.sidebar ul {
+list-style-type: none;
+padding: 0;
+margin: 0;
+}
+
+.sidebar li {
+padding-left: 20px;
+}
 
 .sidebar a {
+display: block;
 padding: 8px 8px 8px 20px;
 text-decoration: none;
-font-size: 25px;
+font-size: 20px;
 color: #818181;
-display: block;
 transition: 0.3s;
 }
 
@@ -47,8 +66,8 @@ border: none;
 
 .openbtn:hover {
 background-color: #444;
-} 
-
+}
+  
 #main {
 transition: margin-left .5s;
 padding: 0;
@@ -78,6 +97,13 @@ padding: 0;
 
 .right {
     right: 0;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 .container {
