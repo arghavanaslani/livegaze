@@ -7,33 +7,38 @@
 
 <body>
 
-<div class="split left">
-  {%for camera_id in range(0, camera_ids)%}
+<div class="center">
   <div class="container">
-    <canvas id='painting_canvas_{{camera_id}}'></canvas>
-    <img id="painting_{{camera_id}}".format() src="{{ url_for('static',filename='/image1.png') }}" alt="Transformed View" class="image-trans">
+    <canvas id='painting_canvas'></canvas>
+    <img id="painting_image" src="{{ url_for('static',filename='/image1.png') }}" alt="Transformed View" class="image-trans">
     <div class="overlay">
       <div class="text"> 
-        <p id = "ID"> ID: {{camera_id}} </p>
-        <p id = "mapped_x_{{camera_id}}"></p>
-        <p id = "mapped_y_{{camera_id}}"></p>
+        <p id = "ID"></p>
+        <p id = "mapped_x"></p>
+        <p id = "mapped_y"></p>
       </div>
+    </div>
   </div>
 </div> 
 
 <script>
+var eventSources = [];
+var camera_ids = {{ camera_ids }};
 
-var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id)) }}")
+for (var i = 0; i < camera_ids; i++) {
 
-eventSource.addEventListener("mapped_gaze", function(e) {
+  var eventSource = new EventSource("/mapped_gaze_feed/" + i);
+  
+  eventSource.addEventListener("mapped_gaze", function(e) {
+    var data = JSON.parse(e.data);
+    var id = data.camera_id;
 
-    data = JSON.parse(e.data)
+    document.querySelector("#ID").innerText = "ID: " + id;
+    document.querySelector("#mapped_x").innerText = "mapped X: " + data.x;
+    document.querySelector("#mapped_y").innerText = "mapped Y: " + data.y;
 
-    document.querySelector("#mapped_x_{{camera_id}}").innerText = "mapped X: " + data.x
-    document.querySelector("#mapped_y_{{camera_id}}").innerText = "mapped Y: " + data.y
-
-    var img = document.getElementById("painting_{{camera_id}}");
-    var cnvs = document.getElementById("painting_canvas_{{camera_id}}");
+    var img = document.getElementById("painting_image");
+    var cnvs = document.getElementById("painting_canvas");
 
     cnvs.style.position = "absolute";
     cnvs.style.left = img.offsetLeft + "px";
@@ -45,19 +50,18 @@ eventSource.addEventListener("mapped_gaze", function(e) {
     ctx.clearRect(0, 0, cnvs.width, cnvs.height);
     ctx.beginPath();
 
-    let x = (data.x /400) * 300
-    let y = (data.y /300) * 150
+    var x = (data.x / 400) * 300;
+    var y = (data.y / 300) * 150;
 
-    // let x = (data.x /1200) * 424;
-    // let y = (data.y /849) * 300;
-    
     ctx.arc(x, y, 20, 0, 2 * Math.PI, false);
     ctx.lineWidth = 3;
     ctx.strokeStyle = '#ff0000';
-    ctx.stroke();   }, true);
-    
+    ctx.stroke();
+  }, true);
+
+  eventSources.push(eventSource);
+}
 </script>
-{%endfor%}
 
 </body>
 </html>
