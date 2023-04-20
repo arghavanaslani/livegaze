@@ -35,6 +35,7 @@ print(cameras)
 def index():
     return render_template('demo.html', camera_ids = number_of_cameras)
 
+# forms
 @app.route('/participant.html')
 def participant():
     return render_template("participant.html")
@@ -43,18 +44,19 @@ def participant():
 def stimulus():
     return render_template("stimulus.html")
 
-
 @app.route('/experiment.html')
 def experiment():
     return render_template("experiment.html")
 
+# effects
 @app.route('/transformed1.html')
 def transformed1():
     return render_template('transformed1.html', camera_ids = number_of_cameras)
 
-# @app.route('/main.js')
-# def script():
-#     return render_template('main.js')
+@app.route('/torch.html')
+def torch():
+    return render_template('torch.html', camera_ids = number_of_cameras)   
+
 
 @app.route('/devices_info/<string:id>/')
 def devices_info_feed(id):
