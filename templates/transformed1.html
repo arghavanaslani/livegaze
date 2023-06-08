@@ -50,8 +50,8 @@ for (var i = 0; i < camera_ids; i++) {
     ctx.clearRect(0, 0, cnvs.width, cnvs.height);
     ctx.beginPath();
 
-    var x = (data.x / 400) * 300;
-    var y = (data.y / 300) * 150;
+    let x = (data.x /1200) * 300
+    let y = (data.y /849) * 150
 
     ctx.arc(x, y, 20, 0, 2 * Math.PI, false);
     ctx.lineWidth = 3;
