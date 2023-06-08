@@ -1,114 +1,3 @@
-<!-- <!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/demostyle.css') }}">
-</head>
-
-<body>
-
-<div class="center">
-  {%for camera_id in range(0, camera_ids)%}
-  <div class="container">
-    <canvas id='painting_canvas_{{camera_id}}'></canvas>
-    <div id="torch">
-      <img id="painting_{{camera_id}}".format() src="{{ url_for('static',filename='/image1.png') }}" alt="Transformed View" class="image-trans">   
-      <div class="overlay">
-      <div class="text"> 
-        <p id = "ID"> ID: {{camera_id}} </p>
-        <p id = "mapped_x_{{camera_id}}"></p>
-        <p id = "mapped_y_{{camera_id}}"></p>
-      </div>
-  </div>
-</div> 
-
-<script>
-
-var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id)) }}")
-
-
-// Set up variables to keep track of the mask and the time elapsed
-var mask = document.createElement("canvas");
-var maskCtx = mask.getContext("2d");
-mask.width = 1200;
-mask.height = 849;
-maskCtx.fillStyle = "rgba(0, 0, 0, 1)";
-maskCtx.fillRect(0, 0, mask.width, mask.height);
-var lastTime = null;
-
-
-
-eventSource.addEventListener("mapped_gaze", function(e) {
-
-    data = JSON.parse(e.data)
-
-    document.querySelector("#mapped_x_{{camera_id}}").innerText = "mapped X: " + data.x
-    document.querySelector("#mapped_y_{{camera_id}}").innerText = "mapped Y: " + data.y
-
-    var img = document.getElementById("painting_{{camera_id}}");
-    var cnvs = document.getElementById("painting_canvas_{{camera_id}}");
-
-
-    cnvs.style.position = "absolute";
-    cnvs.style.left = img.offsetLeft + "px";
-    cnvs.style.top = img.offsetTop + "px";
-    cnvs.style.width = img.offsetWidth + "px";
-    cnvs.style.height = img.offsetHeight + "px";
-
-    var ctx = cnvs.getContext("2d");
-    ctx.clearRect(0, 0, cnvs.width, cnvs.height);
-    ctx.beginPath();
-
-    let x = (data.x /1200) * 300
-    let y = (data.y /849) * 150
-
-    // let x = (data.x /1200) * 424;
-    // let y = (data.y /849) * 300;
-    
-    // Draw the mask on the canvas
-    ctx.drawImage(mask, 0, 0);
-
-    // Calculate the time elapsed since the last update
-    var currentTime = Date.now();
-    var deltaTime = lastTime ? currentTime - lastTime : 0;
-    lastTime = currentTime;
-
-    // Clear the mask around the gaze point, making it brighter
-    var gradient = ctx.createRadialGradient(x, y, 0, x, y, 10);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    maskCtx.fillStyle = gradient;
-    maskCtx.globalCompositeOperation = "destination-out";
-    maskCtx.beginPath();
-    maskCtx.arc(x, y, 15, 0, 2 * Math.PI);
-    maskCtx.fill();
-
-    // // Fade out the mask over time
-    // maskCtx.globalCompositeOperation = "source-over";
-    // maskCtx.fillStyle = "rgba(0, 0, 0, " + (deltaTime / 1000) + ")";
-    // maskCtx.fillRect(0, 0, mask.width, mask.height);
-}, true);
-    
-</script>
-{%endfor%}
-
-</body>
-</html> -->
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -171,8 +60,8 @@ for (var i = 0; i < camera_ids; i++) {
     ctx.clearRect(0, 0, cnvs.width, cnvs.height);
     ctx.beginPath();
 
-    var x = (data.x / 400) * 300;
-    var y = (data.y / 300) * 150;
+    let x = (data.x /1200) * 300
+    let y = (data.y /849) * 150
 
     // Draw the mask on the canvas
     ctx.drawImage(mask, 0, 0);
