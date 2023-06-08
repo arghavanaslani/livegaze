@@ -1,0 +1,3 @@
+include requirements.txt
+graft flaskr/static
+graft flaskr/templates
