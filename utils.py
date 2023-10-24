@@ -83,7 +83,7 @@ def perspective_mapper(tags, source_img, gaze, maxWidth=1200, maxHeight=849):
 
 
 
-def get_mapped_gaze(tags, gaze):
+def get_mapped_gaze(tags, gaze,height,width):
     tags_sorted_by_center = sort_poses(tags)
     sorted_coords = list(tags_sorted_by_center.values())
 
@@ -102,8 +102,8 @@ def get_mapped_gaze(tags, gaze):
     # maxHeight = max(int(height_AB), int(height_CD))
     input_pts = np.float32([pt_A, pt_B, pt_C, pt_D])
 
-    maxHeight = 849
-    maxWidth = 1200
+    maxHeight = height
+    maxWidth = width
 
     output_pts = np.float32([[0, 0],
                             [0, maxHeight - 1],

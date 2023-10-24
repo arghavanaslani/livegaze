@@ -53,6 +53,10 @@ def experiment():
 def transformed1():
     return render_template('transformed1.html', camera_ids = number_of_cameras)
 
+@app.route('/transformed.html')
+def transformed():
+    return render_template('transformed.html', camera_ids = number_of_cameras)
+
 @app.route('/torch.html')
 def torch():
     return render_template('torch.html', camera_ids = number_of_cameras)   
@@ -77,7 +81,7 @@ def video_feed(id):
 
 @app.route('/mapped_gaze_feed/<string:id>/')
 def mapped_gaze_feed(id):
-    return Response(gen_mapped_gaze(int(id)), mimetype='text/event-stream')
+    return Response(gen_mapped_gaze(int(id)), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 
@@ -111,6 +115,11 @@ at_detector = Detector(
         debug=0)
 
 sem = threading.Semaphore()
+
+ref_img = cv.imread("./static/image.png", cv2.IMREAD_COLOR)
+shape_ref_img = reference_img.shape
+# gaze_data = {"x":100, "y":100}
+
 def gen_mapped_gaze(camera_id):
     while True:
         tags = []
@@ -136,15 +145,29 @@ def gen_mapped_gaze(camera_id):
             sem.release()
             if(len(tags) == 4):
                 print("4 april tags are detected camera id: " + str(camera_id) )
-                mapped_gaze = get_mapped_gaze(tags, gaze)
-                gaze_data = json.dumps({"x":mapped_gaze[0], "y":mapped_gaze[1]})
+                reference_img = ref_img
+                height_ref_img = shape_ref_img[0]
+                width_ref_img =shape_ref_img[1]
+                mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img,width_ref_img )
+                gaze_data = {"x":mapped_gaze[0], "y":mapped_gaze[1]}
                 print(gaze_data)
+                cv.circle(reference_img,
+                (int(gaze_data['x']), int(gaze_data['y'])),
+                radius=30,
+                color=(0, 0, 255),
+                thickness=15)
 
-                yield f"id: {camera_id}\ndata: {gaze_data}\nevent: mapped_gaze\n\n"
+                params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
+
+                yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
+                
             else:
-                gaze_data = json.dumps({"x":-30, "y":-30})
-
-                yield f"id: {camera_id}\ndata: {gaze_data}\nevent: mapped_gaze\n\n"
+                reference_img = ref_img
+                params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
+                
+                yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
 
             time.sleep(0.03333)
@@ -160,6 +183,8 @@ def gen_frames(camera_id):
  
     while True:
         frame, gaze = device.receive_matched_scene_video_frame_and_gaze()
+
+
         frame_of_each_camera[int(camera_id)] = frame
         gaze_of_each_camera[int(camera_id)] = gaze
         cv.circle(
