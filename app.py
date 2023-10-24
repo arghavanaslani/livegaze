@@ -189,8 +189,7 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
                 if (mode == 'simple'):
                     params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
                     image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
-                
-                    yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
+
                 if(mode == 'torch'):
                     mask = np.zeros_like(reference_img)
                     reference_img = cv2.bitwise_and(reference_img, mask)
@@ -198,7 +197,7 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
                     params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
                     image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
                 
-                    yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
+                yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
 
             time.sleep(0.03333)
