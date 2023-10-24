@@ -81,7 +81,11 @@ def video_feed(id):
 
 @app.route('/mapped_gaze_feed/<string:id>/')
 def mapped_gaze_feed(id):
-    return Response(gen_mapped_gaze(int(id)), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_mapped_gaze(int(id), mode = 'simple'), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/mapped_gaze_torch_feed/<string:id>/')
+def mapped_gaze_feed(id):
+    return Response(gen_mapped_gaze(int(id), mode = 'torch'), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 
@@ -120,7 +124,7 @@ ref_img = cv.imread("./static/image.png", cv2.IMREAD_COLOR)
 shape_ref_img = reference_img.shape
 # gaze_data = {"x":100, "y":100}
 
-def gen_mapped_gaze(camera_id):
+def gen_mapped_gaze(camera_id, mode = 'simple'):
     while True:
         tags = []
         try:
@@ -145,17 +149,31 @@ def gen_mapped_gaze(camera_id):
             sem.release()
             if(len(tags) == 4):
                 print("4 april tags are detected camera id: " + str(camera_id) )
-                reference_img = ref_img
-                height_ref_img = shape_ref_img[0]
-                width_ref_img =shape_ref_img[1]
                 mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img,width_ref_img )
                 gaze_data = {"x":mapped_gaze[0], "y":mapped_gaze[1]}
-                # print(gaze_data)
-                cv.circle(reference_img,
-                (int(gaze_data['x']), int(gaze_data['y'])),
-                radius=30,
-                color=(0, 0, 255),
-                thickness=15)
+
+                if (mode == 'simple'):
+                    reference_img = ref_img
+                    height_ref_img = shape_ref_img[0]
+                    width_ref_img =shape_ref_img[1]
+
+                    # print(gaze_data)
+                    cv.circle(reference_img,
+                    (int(gaze_data['x']), int(gaze_data['y'])),
+                    radius=30,
+                    color=(0, 0, 255),
+                    thickness=15)
+
+                if (mode == 'torch'):
+                    reference_img = ref_img
+                    height_ref_img = shape_ref_img[0]
+                    width_ref_img =shape_ref_img[1]
+
+                    mask = np.zeros_like(reference_img)
+                    mask = cv2.circle(mask, (int(gaze_data['x']), int(gaze_data['y']) ), 30, (255,255,255), -1)
+
+                    reference_img = cv2.bitwise_and(reference_img, mask)
+
 
                 params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
                 image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
