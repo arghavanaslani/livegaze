@@ -61,6 +61,9 @@ def transformed():
 def torch():
     return render_template('torch.html', camera_ids = number_of_cameras)   
 
+@app.route('/torch_new.html')
+def torch_new():
+    return render_template('torch_new.html', camera_ids = number_of_cameras)   
 
 @app.route('/devices_info/<string:id>/')
 def devices_info_feed(id):
@@ -84,7 +87,7 @@ def mapped_gaze_feed(id):
     return Response(gen_mapped_gaze(int(id), mode = 'simple'), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/mapped_gaze_torch_feed/<string:id>/')
-def mapped_gaze_feed(id):
+def mapped_gaze_torch_feed(id):
     return Response(gen_mapped_gaze(int(id), mode = 'torch'), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
@@ -121,7 +124,9 @@ at_detector = Detector(
 sem = threading.Semaphore()
 
 ref_img = cv.imread("./static/image.png", cv2.IMREAD_COLOR)
-shape_ref_img = reference_img.shape
+shape_ref_img = ref_img.shape
+height_ref_img = shape_ref_img[0]
+width_ref_img =shape_ref_img[1]
 # gaze_data = {"x":100, "y":100}
 
 def gen_mapped_gaze(camera_id, mode = 'simple'):
@@ -149,28 +154,27 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
             sem.release()
             if(len(tags) == 4):
                 print("4 april tags are detected camera id: " + str(camera_id) )
+                height_ref_img = shape_ref_img[0]
+                width_ref_img =shape_ref_img[1]
                 mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img,width_ref_img )
                 gaze_data = {"x":mapped_gaze[0], "y":mapped_gaze[1]}
+                reference_img = copy.deepcopy(ref_img)
 
                 if (mode == 'simple'):
-                    reference_img = ref_img
-                    height_ref_img = shape_ref_img[0]
-                    width_ref_img =shape_ref_img[1]
-
                     # print(gaze_data)
-                    cv.circle(reference_img,
+                    cv.circle(reference_img, # red gaze
                     (int(gaze_data['x']), int(gaze_data['y'])),
-                    radius=30,
+                    radius=100,
                     color=(0, 0, 255),
                     thickness=15)
 
                 if (mode == 'torch'):
-                    reference_img = ref_img
-                    height_ref_img = shape_ref_img[0]
-                    width_ref_img =shape_ref_img[1]
-
                     mask = np.zeros_like(reference_img)
-                    mask = cv2.circle(mask, (int(gaze_data['x']), int(gaze_data['y']) ), 30, (255,255,255), -1)
+                    mask = cv2.circle(mask, # torch light
+                    (int(gaze_data['x']), int(gaze_data['y']) ),
+                     100, 
+                     (255,255,255),
+                    -1)
 
                     reference_img = cv2.bitwise_and(reference_img, mask)
 
@@ -181,11 +185,20 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
                 
             else:
-                reference_img = ref_img
-                params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
-                image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
+                reference_img = copy.deepcopy(ref_img)
+                if (mode == 'simple'):
+                    params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                    image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
                 
-                yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
+                    yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
+                if(mode == 'torch'):
+                    mask = np.zeros_like(reference_img)
+                    reference_img = cv2.bitwise_and(reference_img, mask)
+
+                    params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                    image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
+                
+                    yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
 
             time.sleep(0.03333)
