@@ -150,7 +150,7 @@ def gen_mapped_gaze(camera_id):
                 width_ref_img =shape_ref_img[1]
                 mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img,width_ref_img )
                 gaze_data = {"x":mapped_gaze[0], "y":mapped_gaze[1]}
-                print(gaze_data)
+                # print(gaze_data)
                 cv.circle(reference_img,
                 (int(gaze_data['x']), int(gaze_data['y'])),
                 radius=30,
