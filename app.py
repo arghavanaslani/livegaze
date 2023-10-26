@@ -123,13 +123,14 @@ at_detector = Detector(
 
 sem = threading.Semaphore()
 
-ref_img = cv.imread("./static/image.png", cv2.IMREAD_COLOR)
+ref_img = cv.imread("./static/dartboard.jpg", cv2.IMREAD_COLOR)
 shape_ref_img = ref_img.shape
 height_ref_img = shape_ref_img[0]
 width_ref_img =shape_ref_img[1]
 # gaze_data = {"x":100, "y":100}
 
 def gen_mapped_gaze(camera_id, mode = 'simple'):
+    last_gaze = None
     while True:
         tags = []
         try:
@@ -153,12 +154,16 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
         finally:
             sem.release()
             if(len(tags) == 4):
-                print("4 april tags are detected camera id: " + str(camera_id) )
+                print("4 april tags are detected camera id: " + str(camera_id))
                 height_ref_img = shape_ref_img[0]
                 width_ref_img =shape_ref_img[1]
-                mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img,width_ref_img )
-                gaze_data = {"x":mapped_gaze[0], "y":mapped_gaze[1]}
+                mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img,width_ref_img)
+                gaze_data = {"x":mapped_gaze[0], "y": mapped_gaze[1]}
                 reference_img = copy.deepcopy(ref_img)
+
+                if gaze_data['x'] > 0 and gaze_data['y'] > 0 and gaze_data['x'] < width_ref_img and \
+                        gaze_data['y'] < height_ref_img:
+                    last_gaze = gaze_data
 
                 if (mode == 'simple'):
                     # print(gaze_data)
@@ -186,16 +191,25 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
                 
             else:
                 reference_img = copy.deepcopy(ref_img)
-                if (mode == 'simple'):
-                    params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
-                    image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
+                if (mode == 'simple') and last_gaze is not None:
+                    cv.circle(reference_img,  # red gaze
+                              (int(last_gaze['x']), int(last_gaze['y'])),
+                              radius=100,
+                              color=(0, 0, 255),
+                              thickness=15)
 
                 if(mode == 'torch'):
                     mask = np.zeros_like(reference_img)
+                    if last_gaze is not None:
+                        mask = cv.circle(mask,  # torch light
+                                          (int(last_gaze['x']), int(last_gaze['y'])),
+                                          100,
+                                          (255, 255, 255),
+                                          -1)
                     reference_img = cv2.bitwise_and(reference_img, mask)
 
-                    params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
-                    image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
+                params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
                 
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
