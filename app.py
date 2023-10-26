@@ -131,6 +131,7 @@ width_ref_img =shape_ref_img[1]
 
 def gen_mapped_gaze(camera_id, mode = 'simple'):
     last_gaze = None
+    last_torch_mask = None
     while True:
         tags = []
         try:
@@ -174,14 +175,17 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
                     thickness=15)
 
                 if (mode == 'torch'):
-                    mask = np.zeros_like(reference_img)
-                    mask = cv2.circle(mask, # torch light
+                    new_mask = np.zeros_like(reference_img)
+                    new_mask = cv2.circle(new_mask, # torch light
                     (int(gaze_data['x']), int(gaze_data['y']) ),
                      100, 
                      (255,255,255),
                     -1)
-
-                    reference_img = cv2.bitwise_and(reference_img, mask)
+                    if last_torch_mask is not None:
+                        last_torch_mask = cv2.bitwise_or(new_mask, last_torch_mask)
+                    else:
+                        last_torch_mask = new_mask
+                    reference_img = cv2.bitwise_and(reference_img, last_torch_mask)
 
 
                 params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
@@ -199,13 +203,7 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
                               thickness=15)
 
                 if(mode == 'torch'):
-                    mask = np.zeros_like(reference_img)
-                    if last_gaze is not None:
-                        mask = cv.circle(mask,  # torch light
-                                          (int(last_gaze['x']), int(last_gaze['y'])),
-                                          100,
-                                          (255, 255, 255),
-                                          -1)
+                    mask = last_torch_mask if last_torch_mask is not None else np.zeros_like(reference_img)
                     reference_img = cv2.bitwise_and(reference_img, mask)
 
                 params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
