@@ -1,5 +1,6 @@
 # import imp
 from flask import Flask, render_template, Response, stream_with_context
+from extensions import db_config
 
 from pupil_labs.realtime_api.simple import discover_devices
 import cv2 as cv
@@ -14,7 +15,7 @@ import random
 thread = None
 
 app = Flask(__name__)
-
+db_config.init_db(app)
 print("Searching for cameras...")
 cameras = discover_devices(search_duration_seconds=5.0)
 
