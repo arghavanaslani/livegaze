@@ -10,7 +10,9 @@ artwork_blueprint = Blueprint('artwork', __name__)
 
 @artwork_blueprint.route('/')
 def get_artworks():
-
+    artworks = Artwork.query.all()
+    return render_template('artworks/artworks.html',
+                           title='Artworks', artworks=artworks)
     pass
 
 

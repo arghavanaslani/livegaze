@@ -1,10 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'artworks/base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
-</body>
-</html>
+{% block app_context %}
+    <div class="row">
+        <div class="col-md-12">
+            <h1> {{ title }} </h1>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Bio</th>
+                        <th>Image</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for artwork in artworks %}
+                         <tr>
+                            <td>{{ artwork.id }}</td>
+                            <td>{{ artwork.name }}</td>
+                            <td>{{ artwork.bio }}</td>
+                            <td><img src="{{ artwork.image_path }}" alt="image of {{ artwork.name }}"></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
