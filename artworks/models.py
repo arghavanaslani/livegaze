@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped
+from typing import List
 from extensions.base_model import Base
 
 
@@ -9,4 +11,4 @@ class Artwork(Base):
     name = Column(String(256))
     bio = Column(Text)
     image_path = Column(String(256))
-    gaze_datas = relationship(back_populates='artwork')
+    # gaze_datas: Mapped[List["GazeData"]] = relationship(back_populates='artwork')

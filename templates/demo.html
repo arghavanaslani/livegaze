@@ -9,20 +9,25 @@
 <body>
 
 <div id="mySidebar" class="sidebar">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-  <h2>Add</h2>
-  <ul>
-    <li><a href="participant.html" target="_blank">Participant</a></li>
-    <li><a href="stimulus.html" target="_blank">Stimulus</a></li>
-    <li><a href="experiment.html" target="_blank">Experiment</a></li>
-  </ul>
-  <h2>Effects</h2>
-  <ul>
-    <li><a href="transformed.html" target="_blank">Simple Transformed</a></li>
-    <li><a href="torch_new.html" target="_blank">Accumulative Torchlight Effect</a></li>
-  </ul>
-  <a href="#">Dashboard</a>
-  <a href="#">Help</a>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+    <h2>Artworks</h2>
+    <ul>
+        <li><a href="{{ url_for('artworks.get_artworks')}}">View All</a></li>
+        <li><a href="{{ url_for('artworks.add_artwork')}}">Add Artwork</a></li>
+    </ul>
+    <h2>Add</h2>
+    <ul>
+        <li><a href="participant.html" target="_blank">Participant</a></li>
+        <li><a href="stimulus.html" target="_blank">Stimulus</a></li>
+        <li><a href="experiment.html" target="_blank">Experiment</a></li>
+    </ul>
+    <h2>Effects</h2>
+    <ul>
+        <li><a href="transformed.html" target="_blank">Simple Transformed</a></li>
+        <li><a href="torch_new.html" target="_blank">Accumulative Torchlight Effect</a></li>
+    </ul>
+    <a href="#">Dashboard</a>
+    <a href="#">Help</a>
 </div>
 
 
@@ -63,13 +68,13 @@
   <!-- TRANSFORMED VIEW THUMBNAILS -->
   <!-- <div class="split right">
 
-    {%for camera_id in range(0, camera_ids)%}
+{#    {%for camera_id in range(0, camera_ids)%}#}
 
     <div class="container">
         <canvas id='painting_canvas_{{camera_id}}'></canvas>
         <img id="painting_{{camera_id}}".format() src="{{ url_for('static',filename='/image1.png') }}" alt="Transformed View" class="image-trans">
         <div class="overlay">
-          <div class="text"> 
+          <div class="text">
             <p id = "ID"> ID: {{camera_id}} </p>
             <p id = "mapped_x_{{camera_id}}"></p>
             <p id = "mapped_y_{{camera_id}}"></p>
@@ -78,13 +83,13 @@
     </div> -->
 
     <script>
-      
+
       // var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id)) }}")
 
       // eventSource.addEventListener("mapped_gaze", function(e) {
-      
+
       //     data = JSON.parse(e.data);
-      
+
       //     document.querySelector("#mapped_x_{{camera_id}}").innerText = "transformed X: " + data.x;
       //     document.querySelector("#mapped_y_{{camera_id}}").innerText = "transformed Y: " + data.y;
       //     if (cnvs.img === img){
@@ -95,22 +100,22 @@
       //     var cnvs = document.createElement("canvas");
       //     cnvs.id = "painting_canvas_{{camera_id}}";
       //     img.parentElement.appendChild(cnvs);
-      
+
           // var imgRect = img.getBoundingClientRect();
           // cnvs.style.position = "absolute";
           // cnvs.style.left = img.offsetLeft + "px";
           // cnvs.style.top = img.offsetTop + "px";
           // cnvs.style.width = img.offsetWidth + "px";
           // cnvs.style.height = img.offsetHeight + "px";
-      
+
           // var ctx = cnvs.getContext("2d");
           // ctx.clearRect(0, 0, cnvs.width, cnvs.height);
           // ctx.beginPath();
-      
+
           // let x = (data.x /1200) * 424;
           // let y = (data.y /849) * 300;
 
-          // 1200 & 849 --> image pixels 
+          // 1200 & 849 --> image pixels
           // 371 & 262 --> canvas size (inspect)
           // let x = (data.x /1200) * 371;
           // let y = (data.y /849) * 262;
@@ -119,7 +124,7 @@
         //   ctx.lineWidth = 2;
         //   ctx.strokeStyle = '#ff0000';
         //   ctx.stroke();
-        // }, true); 
+        // }, true);
 
       function openNav() {
         document.getElementById("mySidebar").style.width = "220px";
@@ -129,9 +134,9 @@
       function closeNav() {
         document.getElementById("mySidebar").style.width = "0";
         document.getElementById("main").style.marginLeft= "0";
-      }  
+      }
     </script>
-    <!-- {%endfor%} -->
+{#    <!-- {%endfor%} -->#}
 </div>
 
    

@@ -145,3 +145,5 @@ yarl==1.8.1
 zeroconf
 zipp==3.8.1
 zope.interface
+wtforms==3.1.1
+flask_wtf==1.2.1

@@ -11,6 +11,9 @@ from utils import *
 import json
 import time
 import threading
+from artworks.views import artwork_blueprint
+from flask_bootstrap import Bootstrap
+
 import random
 
 thread = None
@@ -22,7 +25,8 @@ if os.path.exists('config.py'):
 else:
     app.config.from_pyfile("config_example.py")
 db_config.init_db(app)
-
+app.register_blueprint(artwork_blueprint, url_prefix="/artworks")
+bootstrap = Bootstrap(app)
 print("Searching for cameras...")
 cameras = discover_devices(search_duration_seconds=5.0)
 

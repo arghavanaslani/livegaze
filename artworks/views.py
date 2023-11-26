@@ -5,19 +5,18 @@ from werkzeug.utils import secure_filename
 from extensions.db_config import db
 import os
 
-artwork_blueprint = Blueprint('artwork', __name__)
-
+artwork_blueprint = Blueprint('artworks', __name__)
 
 @artwork_blueprint.route('/')
 def get_artworks():
-    artworks = Artwork.query.all()
+    artworks = db.session.query(Artwork).all()
     return render_template('artworks/artworks.html',
                            title='Artworks', artworks=artworks)
     pass
 
 
 @artwork_blueprint.route('/new', methods=['GET', 'SET'])
-def add_new_artwork():
+def add_artwork():
     form = ArtworkForm()
     if form.validate_on_submit():
         artwork = Artwork(name=form.name.data, bio=form.bio.data)
