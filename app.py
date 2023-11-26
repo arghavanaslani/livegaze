@@ -5,6 +5,7 @@ from extensions import db_config
 from pupil_labs.realtime_api.simple import discover_devices
 import cv2 as cv
 import copy
+import os
 from pupil_apriltags import Detector
 from utils import *
 import json
@@ -15,14 +16,20 @@ import random
 thread = None
 
 app = Flask(__name__)
+
+if os.path.exists('config.py'):
+    app.config.from_pyfile("config.py")
+else:
+    app.config.from_pyfile("config_example.py")
 db_config.init_db(app)
+
 print("Searching for cameras...")
 cameras = discover_devices(search_duration_seconds=5.0)
 
 
 number_of_cameras = len(cameras)
 
-print(number_of_cameras , " device(s) connected.")
+print(number_of_cameras, " device(s) connected.")
 
 frame_of_each_camera = [None] * number_of_cameras
 gaze_of_each_camera = [None] * number_of_cameras
