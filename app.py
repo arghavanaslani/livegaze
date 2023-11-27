@@ -106,15 +106,15 @@ def video_feed(id):
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@app.route('/mapped_gaze_feed/<string:artwork_id>/<string:camera_id>/')
-def mapped_gaze_feed(artwork_id, camera_id):
-    return Response(gen_mapped_gaze(int(camera_id), int(artwork_id), mode='simple'),
+@app.route('/mapped_gaze_feed/<string:artwork_id>/')
+def mapped_gaze_feed(artwork_id):
+    return Response(gen_mapped_gaze(int(artwork_id), mode='simple'),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@app.route('/mapped_gaze_torch_feed/<string:artwork_id>/<string:camera_id>/')
-def mapped_gaze_torch_feed(artwork_id, camera_id):
-    return Response(gen_mapped_gaze(int(camera_id), int(artwork_id), mode='torch'),
+@app.route('/mapped_gaze_torch_feed/<string:artwork_id>/')
+def mapped_gaze_torch_feed(artwork_id):
+    return Response(gen_mapped_gaze(int(artwork_id), mode='torch'),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
@@ -153,7 +153,7 @@ sem = threading.Semaphore()
 # gaze_data = {"x":100, "y":100}
 
 
-def gen_mapped_gaze(camera_id, artwork_id, mode='simple'):
+def gen_mapped_gaze(artwork_id, mode='simple'):
     last_gaze = None
     last_torch_mask = None
     with app.app_context():
@@ -163,12 +163,18 @@ def gen_mapped_gaze(camera_id, artwork_id, mode='simple'):
     shape_ref_img = ref_img.shape
     height_ref_img = shape_ref_img[0]
     width_ref_img = shape_ref_img[1]
+
+    if number_of_cameras == 0:
+        params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
+        image = cv.imencode('.jpg', ref_img, params)[1].tobytes()
+        yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
+
     while True:
         tags = []
         try:
             sem.acquire()
-            frame = frame_of_each_camera[int(camera_id)]
-            gaze = gaze_of_each_camera[int(camera_id)]
+            frame = frame_of_each_camera[0]
+            gaze = gaze_of_each_camera[0]
 
             image = frame.bgr_pixels
 
@@ -186,7 +192,7 @@ def gen_mapped_gaze(camera_id, artwork_id, mode='simple'):
         finally:
             sem.release()
             if (len(tags) == 4):
-                print("4 april tags are detected camera id: " + str(camera_id))
+                print("4 april tags are detected camera id: " + str(0))
                 height_ref_img = shape_ref_img[0]
                 width_ref_img = shape_ref_img[1]
                 mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img, width_ref_img)
