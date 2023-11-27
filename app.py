@@ -16,6 +16,7 @@ import threading
 from artworks.views import artwork_blueprint
 from flask_bootstrap import Bootstrap
 from artworks.models import Artwork
+from gaze_data.models import GazeData, GazeType
 
 import random
 
@@ -147,7 +148,7 @@ sem = threading.Semaphore()
 # gaze_data = {"x":100, "y":100}
 
 
-def gen_mapped_gaze(artwork_id, mode='simple', tag_type='april'):
+def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
     last_gaze = None
     last_torch_mask = None
     with app.app_context():
@@ -160,6 +161,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='april'):
     aruco_dict = None
     aruco_params = None
     at_detector = None
+    uncommited_gaze_data_count = 0
     if tag_type=='april':
         at_detector = Detector(
             families='tag36h11',
@@ -170,8 +172,9 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='april'):
             decode_sharpening=0.25,
             debug=0)
     elif tag_type == 'aruco':
-        aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
-        aruco_params = cv2.aruco.DetectorParameters_create()
+        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
+        aruco_params = cv2.aruco.DetectorParameters()
+        aruco_detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_params)
 
     if number_of_cameras == 0:
         params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
@@ -189,7 +192,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='april'):
 
             img_copy = copy.deepcopy(image)
             img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
-            tags = utils.detect_tags(img_copy, aruco_params, aruco_dict, at_detector)
+            tags = utils.detect_tags(img_copy, aruco_detector, at_detector)
             #
             # tags = at_detector.detect(
             #     img_copy,
@@ -207,7 +210,19 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='april'):
                 height_ref_img = shape_ref_img[0]
                 width_ref_img = shape_ref_img[1]
                 mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img, width_ref_img)
+
                 gaze_data = {"x": mapped_gaze[0], "y": mapped_gaze[1]}
+                gaze_data_object = GazeData()
+                gaze_data_object.artwork_id = artwork_id
+                gaze_data_object.gaze_position_x = gaze_data['x'] / width_ref_img
+                gaze_data_object.gaze_position_y = gaze_data['y'] / height_ref_img
+                gaze_data_object.eyetracker_id = 0
+                gaze_data_object.gaze_type = GazeType.simple if mode == 'simple' else GazeType.torch
+                db_config.db.session.add(gaze_data_object)
+                uncommited_gaze_data_count +=1
+                if uncommited_gaze_data_count > 5:
+                    db_config.db.session.commit()
+                    uncommited_gaze_data_count = 0
                 reference_img = copy.deepcopy(ref_img)
 
                 if gaze_data['x'] > 0 and gaze_data['y'] > 0 and gaze_data['x'] < width_ref_img and \

@@ -88,9 +88,9 @@ class ArucoTag:
         self.tag_id = None
 
 
-def detect_tags(image, aruco_params=None, aruco_dict=None, at_detector=None):
-    if aruco_params is not None:
-        (corners, ids, rejected) = cv2.aruco.detectMarkers(image, aruco_dict, parameters=aruco_params)
+def detect_tags(image, aruco_detector=None, at_detector=None):
+    if aruco_detector is not None:
+        (corners, ids, rejected) = aruco_detector.detectMarkers(image)
         if len(ids) <= 0:
             return []
         ids = ids.flatten()
