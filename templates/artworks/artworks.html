@@ -16,6 +16,7 @@
                         <th>Name</th>
                         <th>Bio</th>
                         <th>Image</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -24,7 +25,11 @@
                             <td>{{ artwork.id }}</td>
                             <td>{{ artwork.name }}</td>
                             <td>{{ artwork.bio }}</td>
-                            <td><img src="{{ artwork.image_path }}" alt="image of {{ artwork.name }}"></td>
+                            <td><img src="../{{ artwork.image_path }}" alt="image of {{ artwork.name }}"></td>
+                            <td>
+                                <a href="{{ url_for("transformed", artwork_id='{}'.format(artwork.id)) }}">View Simple</a> <br>
+                                <a href="{{ url_for("torch", artwork_id='{}'.format(artwork.id))}}">View Torchlight</a>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>

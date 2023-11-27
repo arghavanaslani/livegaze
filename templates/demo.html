@@ -23,8 +23,8 @@
     </ul>
     <h2>Effects</h2>
     <ul>
-        <li><a href="transformed.html" target="_blank">Simple Transformed</a></li>
-        <li><a href="torch_new.html" target="_blank">Accumulative Torchlight Effect</a></li>
+        <li><a href="{{ url_for("transformed", artwork_id='{}'.format(0)) }}" target="_blank">Simple Transformed</a></li>
+        <li><a href="{{ url_for("torch_new" , artwork_id='{}'.format(0)) }}" target="_blank">Accumulative Torchlight Effect</a></li>
     </ul>
     <a href="#">Dashboard</a>
     <a href="#">Help</a>
@@ -84,7 +84,7 @@
 
     <script>
 
-      // var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id)) }}")
+      // var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', camera_id='{}'.format(camera_id), artwork_id ='{}'.format(camera_id)) }}")
 
       // eventSource.addEventListener("mapped_gaze", function(e) {
 

@@ -13,6 +13,7 @@ import time
 import threading
 from artworks.views import artwork_blueprint
 from flask_bootstrap import Bootstrap
+from artworks.models import Artwork
 
 import random
 
@@ -27,9 +28,9 @@ else:
 db_config.init_db(app)
 app.register_blueprint(artwork_blueprint, url_prefix="/artworks")
 bootstrap = Bootstrap(app)
+
 print("Searching for cameras...")
 cameras = discover_devices(search_duration_seconds=5.0)
-
 
 number_of_cameras = len(cameras)
 
@@ -38,44 +39,54 @@ print(number_of_cameras, " device(s) connected.")
 frame_of_each_camera = [None] * number_of_cameras
 gaze_of_each_camera = [None] * number_of_cameras
 
-
 # for testing
 
 print(cameras)
 
+
 @app.route('/', methods=["GET"])
 def index():
-    return render_template('demo.html', camera_ids = number_of_cameras)
+    return render_template('demo.html', camera_ids=number_of_cameras)
+
 
 # forms
 @app.route('/participant.html')
 def participant():
     return render_template("participant.html")
 
+
 @app.route('/stimulus.html')
 def stimulus():
     return render_template("stimulus.html")
+
 
 @app.route('/experiment.html')
 def experiment():
     return render_template("experiment.html")
 
+
 # effects
-@app.route('/transformed1.html')
+@app.route('/transformed1')
 def transformed1():
-    return render_template('transformed1.html', camera_ids = number_of_cameras)
+    return render_template('transformed1.html', camera_ids=number_of_cameras)
 
-@app.route('/transformed.html')
-def transformed():
-    return render_template('transformed.html', camera_ids = number_of_cameras)
 
-@app.route('/torch.html')
+@app.route('/transformed/<string:artwork_id>')
+def transformed(artwork_id):
+    return render_template('transformed.html', camera_ids=number_of_cameras,
+                           artwork_id=int(artwork_id))
+
+
+@app.route('/torch')
 def torch():
-    return render_template('torch.html', camera_ids = number_of_cameras)   
+    return render_template('torch.html', camera_ids=number_of_cameras)
 
-@app.route('/torch_new.html')
-def torch_new():
-    return render_template('torch_new.html', camera_ids = number_of_cameras)   
+
+@app.route('/torch_new/<string:artwork_id>')
+def torch_new(artwork_id):
+    return render_template('torch_new.html', camera_ids=number_of_cameras,
+                           artwork_id=int(artwork_id))
+
 
 @app.route('/devices_info/<string:id>/')
 def devices_info_feed(id):
@@ -85,6 +96,7 @@ def devices_info_feed(id):
         info_data = json.dumps({"phone_name": device.phone_name, "battery_level": device.battery_level_percent})
         yield f"id: {id}\ndata: {info_data}\nevent: device_info\n\n"
         time.sleep(60)
+
     return Response(send_devices_info(id), mimetype='text/event-stream')
 
 
@@ -94,14 +106,16 @@ def video_feed(id):
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@app.route('/mapped_gaze_feed/<string:id>/')
-def mapped_gaze_feed(id):
-    return Response(gen_mapped_gaze(int(id), mode = 'simple'), mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/mapped_gaze_feed/<string:artwork_id>/<string:camera_id>/')
+def mapped_gaze_feed(artwork_id, camera_id):
+    return Response(gen_mapped_gaze(int(camera_id), int(artwork_id), mode='simple'),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/mapped_gaze_torch_feed/<string:id>/')
-def mapped_gaze_torch_feed(id):
-    return Response(gen_mapped_gaze(int(id), mode = 'torch'), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/mapped_gaze_torch_feed/<string:artwork_id>/<string:camera_id>/')
+def mapped_gaze_torch_feed(artwork_id, camera_id):
+    return Response(gen_mapped_gaze(int(camera_id), int(artwork_id), mode='torch'),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 # def detect_april_tags(frame):
@@ -125,25 +139,30 @@ def mapped_gaze_torch_feed(id):
 #     return tags
 
 at_detector = Detector(
-        families='tag36h11',
-        nthreads=4,
-        quad_decimate=2.0,
-        quad_sigma=0.0,
-        refine_edges=1,
-        decode_sharpening=0.25,
-        debug=0)
+    families='tag36h11',
+    nthreads=4,
+    quad_decimate=2.0,
+    quad_sigma=0.0,
+    refine_edges=1,
+    decode_sharpening=0.25,
+    debug=0)
 
 sem = threading.Semaphore()
 
-ref_img = cv.imread("./static/dartboard.jpg", cv2.IMREAD_COLOR)
-shape_ref_img = ref_img.shape
-height_ref_img = shape_ref_img[0]
-width_ref_img =shape_ref_img[1]
+
 # gaze_data = {"x":100, "y":100}
 
-def gen_mapped_gaze(camera_id, mode = 'simple'):
+
+def gen_mapped_gaze(camera_id, artwork_id, mode='simple'):
     last_gaze = None
     last_torch_mask = None
+    with app.app_context():
+        artwork = db_config.db.session.query(Artwork).get(int(artwork_id))
+    image_path = artwork.image_path
+    ref_img = cv.imread(image_path, cv2.IMREAD_COLOR)
+    shape_ref_img = ref_img.shape
+    height_ref_img = shape_ref_img[0]
+    width_ref_img = shape_ref_img[1]
     while True:
         tags = []
         try:
@@ -160,18 +179,18 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
                 estimate_tag_pose=False,
                 camera_params=None,
                 tag_size=None,
-        )
+            )
         except:
             print("No Apriltag Detected")
-        
+
         finally:
             sem.release()
-            if(len(tags) == 4):
+            if (len(tags) == 4):
                 print("4 april tags are detected camera id: " + str(camera_id))
                 height_ref_img = shape_ref_img[0]
-                width_ref_img =shape_ref_img[1]
-                mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img,width_ref_img)
-                gaze_data = {"x":mapped_gaze[0], "y": mapped_gaze[1]}
+                width_ref_img = shape_ref_img[1]
+                mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img, width_ref_img)
+                gaze_data = {"x": mapped_gaze[0], "y": mapped_gaze[1]}
                 reference_img = copy.deepcopy(ref_img)
 
                 if gaze_data['x'] > 0 and gaze_data['y'] > 0 and gaze_data['x'] < width_ref_img and \
@@ -180,31 +199,30 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
 
                 if (mode == 'simple'):
                     # print(gaze_data)
-                    cv.circle(reference_img, # red gaze
-                    (int(gaze_data['x']), int(gaze_data['y'])),
-                    radius=100,
-                    color=(0, 0, 255),
-                    thickness=15)
+                    cv.circle(reference_img,  # red gaze
+                              (int(gaze_data['x']), int(gaze_data['y'])),
+                              radius=100,
+                              color=(0, 0, 255),
+                              thickness=15)
 
                 if (mode == 'torch'):
                     new_mask = np.zeros_like(reference_img)
-                    new_mask = cv2.circle(new_mask, # torch light
-                    (int(gaze_data['x']), int(gaze_data['y']) ),
-                     100, 
-                     (255,255,255),
-                    -1)
+                    new_mask = cv2.circle(new_mask,  # torch light
+                                          (int(gaze_data['x']), int(gaze_data['y'])),
+                                          100,
+                                          (255, 255, 255),
+                                          -1)
                     if last_torch_mask is not None:
                         last_torch_mask = cv2.bitwise_or(new_mask, last_torch_mask)
                     else:
                         last_torch_mask = new_mask
                     reference_img = cv2.bitwise_and(reference_img, last_torch_mask)
 
-
-                params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
                 image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
 
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
-                
+
             else:
                 reference_img = copy.deepcopy(ref_img)
                 if (mode == 'simple') and last_gaze is not None:
@@ -214,45 +232,37 @@ def gen_mapped_gaze(camera_id, mode = 'simple'):
                               color=(0, 0, 255),
                               thickness=15)
 
-                if(mode == 'torch'):
+                if (mode == 'torch'):
                     mask = last_torch_mask if last_torch_mask is not None else np.zeros_like(reference_img)
                     reference_img = cv2.bitwise_and(reference_img, mask)
 
-                params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
                 image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
-                
+
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
-
             time.sleep(0.03333)
-        
-
-
-
 
 
 def gen_frames(camera_id):
-     
     device = cameras[int(camera_id)]
- 
+
     while True:
         frame, gaze = device.receive_matched_scene_video_frame_and_gaze()
-
 
         frame_of_each_camera[int(camera_id)] = frame
         gaze_of_each_camera[int(camera_id)] = gaze
         cv.circle(
-                frame.bgr_pixels,
-                (int(gaze.x), int(gaze.y)),
-                radius=80,
-                color=(0, 0, 255),
-                thickness=15,
-            )
+            frame.bgr_pixels,
+            (int(gaze.x), int(gaze.y)),
+            radius=80,
+            color=(0, 0, 255),
+            thickness=15,
+        )
         image = frame.bgr_pixels
-        params = [cv.IMWRITE_JPEG_QUALITY, 50,  cv.IMWRITE_JPEG_OPTIMIZE, 1]
+        params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
         image = cv.imencode('.jpg', image, params)[1].tobytes()
         yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'  # concat frame one by one and show result
-
 
 
 # def gen_gaze_test(id):
@@ -301,9 +311,5 @@ def gen_frames(camera_id):
 #         return (0,0)
 
 
-
-
 if __name__ == '__main__':
     app.run()
-
-

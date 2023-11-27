@@ -10,7 +10,7 @@
   <div class="split left">
     {%for camera_id in range(0, camera_ids)%}
     <div class="container">
-      <img src="{{ url_for('mapped_gaze_feed', id='{}'.format(camera_id) ) }}" alt="Mapped View" class="image-world" width="30px" height="15px">
+      <img src="{{ url_for('mapped_gaze_feed', camera_id='{}'.format(camera_id), artwork_id='{}'.format(artwork_id))}}" alt="Mapped View" class="image-world" width="30px" height="15px">
     </div> 
     {%endfor%}
   </div>
