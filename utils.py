@@ -81,6 +81,43 @@ def perspective_mapper(tags, source_img, gaze, maxWidth=1200, maxHeight=849):
     return out, mapped_gaze
 
 
+class ArucoTag:
+    def __init__(self):
+        self.center = None
+        self.corners = None
+        self.tag_id = None
+
+
+def detect_tags(image, aruco_params=None, aruco_dict=None, at_detector=None):
+    if aruco_params is not None:
+        (corners, ids, rejected) = cv2.aruco.detectMarkers(image, aruco_dict, parameters=aruco_params)
+        if len(ids) <= 0:
+            return []
+        ids = ids.flatten()
+        return_vals = []
+        for (marker_corner, marker_id) in zip(corners, ids):
+            corners = marker_corner.reshape((4, 2))
+            (top_left, top_right, bottom_right, bottom_left) = corners
+            top_right = (int(top_right[0]), int(top_right[1]))
+            bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+            bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+            top_left = (int(top_left[0]), int(top_left[1]))
+            c_x = int((top_right[0] + bottom_left[0]) / 2.0)
+            c_y = int((top_right[1] + bottom_left[1]) / 2.0)
+            detected_tag = ArucoTag()
+            detected_tag.center = np.array([c_x, c_y])
+            detected_tag.tag_id = marker_id
+            detected_tag.corners = np.array([top_left, top_right, bottom_right, bottom_left])
+            return_vals.append(detected_tag)
+        return return_vals
+
+    else:
+        tags = at_detector.detect(
+            image, estimate_tag_pose=False,
+            camera_params=None,
+            tag_size=None
+        )
+        return tags
 
 
 def get_mapped_gaze(tags, gaze,height,width):

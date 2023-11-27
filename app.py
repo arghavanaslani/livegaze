@@ -1,5 +1,7 @@
 # import imp
 from flask import Flask, render_template, Response, stream_with_context
+
+import utils
 from extensions import db_config
 
 from pupil_labs.realtime_api.simple import discover_devices
@@ -138,14 +140,6 @@ def mapped_gaze_torch_feed(artwork_id):
 #         )
 #     return tags
 
-at_detector = Detector(
-    families='tag36h11',
-    nthreads=4,
-    quad_decimate=2.0,
-    quad_sigma=0.0,
-    refine_edges=1,
-    decode_sharpening=0.25,
-    debug=0)
 
 sem = threading.Semaphore()
 
@@ -153,7 +147,7 @@ sem = threading.Semaphore()
 # gaze_data = {"x":100, "y":100}
 
 
-def gen_mapped_gaze(artwork_id, mode='simple'):
+def gen_mapped_gaze(artwork_id, mode='simple', tag_type='april'):
     last_gaze = None
     last_torch_mask = None
     with app.app_context():
@@ -163,6 +157,21 @@ def gen_mapped_gaze(artwork_id, mode='simple'):
     shape_ref_img = ref_img.shape
     height_ref_img = shape_ref_img[0]
     width_ref_img = shape_ref_img[1]
+    aruco_dict = None
+    aruco_params = None
+    at_detector = None
+    if tag_type=='april':
+        at_detector = Detector(
+            families='tag36h11',
+            nthreads=4,
+            quad_decimate=2.0,
+            quad_sigma=0.0,
+            refine_edges=1,
+            decode_sharpening=0.25,
+            debug=0)
+    elif tag_type == 'aruco':
+        aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
+        aruco_params = cv2.aruco.DetectorParameters_create()
 
     if number_of_cameras == 0:
         params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
@@ -180,12 +189,14 @@ def gen_mapped_gaze(artwork_id, mode='simple'):
 
             img_copy = copy.deepcopy(image)
             img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
-            tags = at_detector.detect(
-                img_copy,
-                estimate_tag_pose=False,
-                camera_params=None,
-                tag_size=None,
-            )
+            tags = utils.detect_tags(img_copy, aruco_params, aruco_dict, at_detector)
+            #
+            # tags = at_detector.detect(
+            #     img_copy,
+            #     estimate_tag_pose=False,
+            #     camera_params=None,
+            #     tag_size=None,
+            # )
         except:
             print("No Apriltag Detected")
 
