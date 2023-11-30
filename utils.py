@@ -1,6 +1,7 @@
 import cv2
 import argparse
 import numpy as np
+import pupil_apriltags
 
 # to sort coordinates
 from functools import reduce
@@ -29,7 +30,6 @@ def get_args():
 
 
 def sort_poses(tags):
-
     center_coords = {}
     for i in range(len(tags)):
         center_coords[i] = tuple(tags[i].center)
@@ -39,7 +39,9 @@ def sort_poses(tags):
                        reduce(lambda x, y: map(operator.add, x, y), coords), [len(coords)] * 2))
 
     res = dict(sorted(center_coords.items(), key=lambda item: (-135 -
-               math.degrees(math.atan2(*tuple(map(operator.sub, item[1], center))[::-1]))) % 360))
+                                                               math.degrees(math.atan2(
+                                                                   *tuple(map(operator.sub, item[1], center))[
+                                                                    ::-1]))) % 360))
 
     return res
 
@@ -55,21 +57,21 @@ def perspective_mapper(tags, source_img, gaze, maxWidth=1200, maxHeight=849):
 
     width_AD = np.sqrt(((pt_A[0] - pt_D[0]) ** 2) + ((pt_A[1] - pt_D[1]) ** 2))
     width_BC = np.sqrt(((pt_B[0] - pt_C[0]) ** 2) + ((pt_B[1] - pt_C[1]) ** 2))
-#    maxWidth = max(int(width_AD), int(width_BC))
+    #    maxWidth = max(int(width_AD), int(width_BC))
     height_AB = np.sqrt(((pt_A[0] - pt_B[0]) ** 2) +
                         ((pt_A[1] - pt_B[1]) ** 2))
     height_CD = np.sqrt(((pt_C[0] - pt_D[0]) ** 2) +
                         ((pt_C[1] - pt_D[1]) ** 2))
-#    maxHeight = max(int(height_AB), int(height_CD))
+    #    maxHeight = max(int(height_AB), int(height_CD))
     input_pts = np.float32([pt_A, pt_B, pt_C, pt_D])
     # output_pts = np.float32([[0, 0],
     #                         [0, maxHeight - 1],
     #                         [maxWidth - 1, maxHeight - 1],
     #                         [maxWidth - 1, 0]])
     output_pts = np.float32([[0, 0],
-                            [0, maxHeight - 1],
-                            [maxWidth - 1, maxHeight - 1],
-                            [maxWidth - 1, 0]])
+                             [0, maxHeight - 1],
+                             [maxWidth - 1, maxHeight - 1],
+                             [maxWidth - 1, 0]])
 
     M = cv2.getPerspectiveTransform(input_pts, output_pts)
     gaze_coord = np.float32([[[gaze.x, gaze.y]]])
@@ -88,7 +90,7 @@ class ArucoTag:
         self.tag_id = None
 
 
-def detect_tags(image, aruco_detector=None, at_detector=None):
+def detect_tags(image, aruco_detector: cv2.aruco.ArucoDetector = None, at_detector: pupil_apriltags.Detector = None):
     if aruco_detector is not None:
         (corners, ids, rejected) = aruco_detector.detectMarkers(image)
         if len(ids) <= 0:
@@ -120,7 +122,7 @@ def detect_tags(image, aruco_detector=None, at_detector=None):
         return tags
 
 
-def get_mapped_gaze(tags, gaze,height,width):
+def get_mapped_gaze(tags, gaze, height, width):
     tags_sorted_by_center = sort_poses(tags)
     sorted_coords = list(tags_sorted_by_center.values())
 
@@ -143,14 +145,12 @@ def get_mapped_gaze(tags, gaze,height,width):
     maxWidth = width
 
     output_pts = np.float32([[0, 0],
-                            [0, maxHeight - 1],
-                            [maxWidth - 1, maxHeight - 1],
-                            [maxWidth - 1, 0]])
+                             [0, maxHeight - 1],
+                             [maxWidth - 1, maxHeight - 1],
+                             [maxWidth - 1, 0]])
 
     M = cv2.getPerspectiveTransform(input_pts, output_pts)
     gaze_coord = np.float32([[[gaze.x, gaze.y]]])
     mapped_gaze = cv2.perspectiveTransform(gaze_coord, M)
-
-    
 
     return (int(mapped_gaze[0][0][0]), int(mapped_gaze[0][0][1]))

@@ -5,9 +5,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 import enum
 
-class GazeType(enum):
-    simple = 0
-    torch = 1
+
+class GazeType(enum.Enum):
+    simple = 1
+    torch = 2
 
 
 class GazeData(Base):

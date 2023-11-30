@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/demostyle.css') }}">
+</head>
+
+<body>
+
+  <div class="split left">
+    <div class="container">
+      <img src="{{ url_for('tag_test_feed', artwork_id='{}'.format(artwork_id))}}" alt="Mapped View" class="image-world" width="30px" height="15px">
+    </div> 
+  </div>
+</body>
+</html>

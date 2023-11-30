@@ -120,6 +120,10 @@ def mapped_gaze_torch_feed(artwork_id):
     return Response(gen_mapped_gaze(int(artwork_id), mode='torch'),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/tag_test/<string:artwork_id>/')
+def tag_test_feed(artwork_id):
+    return Response(gen_mapped_gaze(int(artwork_id), mode="tag_test"), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 # def detect_april_tags(frame):
 #     at_detector = Detector(
@@ -158,9 +162,8 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
     shape_ref_img = ref_img.shape
     height_ref_img = shape_ref_img[0]
     width_ref_img = shape_ref_img[1]
-    aruco_dict = None
-    aruco_params = None
     at_detector = None
+    aruco_detector = None
     uncommited_gaze_data_count = 0
     if tag_type=='april':
         at_detector = Detector(
@@ -205,7 +208,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
 
         finally:
             sem.release()
-            if (len(tags) == 4):
+            if len(tags) == 4:
                 print("4 april tags are detected camera id: " + str(0))
                 height_ref_img = shape_ref_img[0]
                 width_ref_img = shape_ref_img[1]
@@ -218,26 +221,26 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                 gaze_data_object.gaze_position_y = gaze_data['y'] / height_ref_img
                 gaze_data_object.eyetracker_id = 0
                 gaze_data_object.gaze_type = GazeType.simple if mode == 'simple' else GazeType.torch
-                db_config.db.session.add(gaze_data_object)
-                uncommited_gaze_data_count +=1
-                if uncommited_gaze_data_count > 5:
-                    db_config.db.session.commit()
-                    uncommited_gaze_data_count = 0
-                reference_img = copy.deepcopy(ref_img)
+                with app.app_context():
+                    db_config.db.session.add(gaze_data_object)
+                    uncommited_gaze_data_count += 1
+                    if uncommited_gaze_data_count > 5:
+                        db_config.db.session.commit()
+                        uncommited_gaze_data_count = 0
+                    reference_img = copy.deepcopy(ref_img)
 
                 if gaze_data['x'] > 0 and gaze_data['y'] > 0 and gaze_data['x'] < width_ref_img and \
                         gaze_data['y'] < height_ref_img:
                     last_gaze = gaze_data
 
-                if (mode == 'simple'):
+                if mode == 'simple':
                     # print(gaze_data)
                     cv.circle(reference_img,  # red gaze
                               (int(gaze_data['x']), int(gaze_data['y'])),
                               radius=100,
                               color=(0, 0, 255),
                               thickness=15)
-
-                if (mode == 'torch'):
+                elif mode == 'torch':
                     new_mask = np.zeros_like(reference_img)
                     new_mask = cv2.circle(new_mask,  # torch light
                                           (int(gaze_data['x']), int(gaze_data['y'])),
@@ -249,6 +252,11 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                     else:
                         last_torch_mask = new_mask
                     reference_img = cv2.bitwise_and(reference_img, last_torch_mask)
+                elif mode == 'tag_test':
+                    reference_img = img_copy
+                    for tag in tags:
+                        cv2.rectangle(reference_img, tag.corners[0], tag.corners[2], color=(0, 255, 0),
+                                                 thickness=10)
 
                 params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
                 image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
@@ -257,16 +265,19 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
 
             else:
                 reference_img = copy.deepcopy(ref_img)
-                if (mode == 'simple') and last_gaze is not None:
+                if mode == 'simple' and last_gaze is not None:
                     cv.circle(reference_img,  # red gaze
                               (int(last_gaze['x']), int(last_gaze['y'])),
                               radius=100,
                               color=(0, 0, 255),
                               thickness=15)
 
-                if (mode == 'torch'):
+                if mode == 'torch':
                     mask = last_torch_mask if last_torch_mask is not None else np.zeros_like(reference_img)
                     reference_img = cv2.bitwise_and(reference_img, mask)
+
+                elif mode == 'tag_test':
+                    reference_img = img_copy
 
                 params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
                 image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
