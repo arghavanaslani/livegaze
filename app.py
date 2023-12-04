@@ -184,6 +184,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
         image = cv.imencode('.jpg', ref_img, params)[1].tobytes()
         yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
+    image = None
     while True:
         tags = []
         try:
@@ -252,8 +253,8 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                     else:
                         last_torch_mask = new_mask
                     reference_img = cv2.bitwise_and(reference_img, last_torch_mask)
-                elif mode == 'tag_test':
-                    reference_img = img_copy
+                elif mode == 'tag_test' and image is not None:
+                    reference_img = image
                     for tag in tags:
                         cv2.rectangle(reference_img, tag.corners[0], tag.corners[2], color=(0, 255, 0),
                                                  thickness=10)
@@ -277,7 +278,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                     reference_img = cv2.bitwise_and(reference_img, mask)
 
                 elif mode == 'tag_test':
-                    reference_img = img_copy
+                    reference_img = image
 
                 params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
                 image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
