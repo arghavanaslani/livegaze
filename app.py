@@ -5,7 +5,6 @@ import utils
 from extensions import db_config
 
 from pupil_labs.realtime_api.simple import discover_devices, Device
-import cv2 as cv
 import copy
 import os
 from pupil_apriltags import Detector
@@ -38,7 +37,7 @@ print("Searching for cameras...")
 # cameras = discover_devices(search_duration_seconds=5.0)
 # cameras = []
 # cameras = [Device("10.181.64.240", 8080)]
-cameras = [Device("10.181.112.159", 8080)]
+cameras = [Device("10.181.192.18", 8080)]
 
 number_of_cameras = len(cameras)
 
@@ -154,7 +153,7 @@ def set_screen_resolution():
 #         debug=0)
 #     image = frame.bgr_pixels
 #     img_copy = copy.deepcopy(image)
-#     img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
+#     img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2GRAY)
 #     tags = at_detector.detect(
 #         img_copy,
 #         estimate_tag_pose=False,
@@ -183,15 +182,17 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
         settings = db_config.db.session.query(Settings).first()
 
     image_path = artwork.image_path
-    ref_img = cv.imread(image_path, cv2.IMREAD_COLOR)
+    ref_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
+
+    ref_img, tag_half_l = utils.add_tags(ref_img)
+    print(tag_half_l)
     shape_ref_img = ref_img.shape
-    print(shape_ref_img)
     height_ref_img = shape_ref_img[0]
     width_ref_img = shape_ref_img[1]
     at_detector = None
     aruco_detector = None
     uncommited_gaze_data_count = 0
-    print(tag_type)
     if tag_type == 'april':
         at_detector = Detector(
             families='tag36h11',
@@ -207,9 +208,8 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
         aruco_detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_params)
 
     if number_of_cameras == 0:
-        params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
-        ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
-        image = cv.imencode('.jpg', ref_img, params)[1].tobytes()
+        params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
+        image = cv2.imencode('.jpg', ref_img, params)[1].tobytes()
         yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
     image = None
@@ -226,7 +226,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
             image = frame.bgr_pixels
 
             img_copy = copy.deepcopy(image)
-            img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
+            img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2GRAY)
             tags = utils.detect_tags(img_copy, aruco_detector, at_detector)
             #
             # tags = at_detector.detect(
@@ -236,7 +236,8 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
             #     tag_size=None,
             # )
         except:
-            print("No Apriltag Detected")
+            pass
+            # print("No Apriltag Detected")
 
         finally:
             sem.release()
@@ -244,7 +245,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                 print("4 april tags are detected camera id: " + str(0))
                 height_ref_img = shape_ref_img[0]
                 width_ref_img = shape_ref_img[1]
-                mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img, width_ref_img)
+                mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img, width_ref_img, tag_half_l)
 
                 gaze_data = {"x": mapped_gaze[0], "y": mapped_gaze[1]}
                 # gaze_data_object = GazeData()
@@ -267,7 +268,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
 
                 if mode == 'simple':
                     # print(gaze_data)
-                    # cv.circle(reference_img,  # red gaze
+                    # cv2.circle(reference_img,  # red gaze
                     #           (int(gaze_data['x']), int(gaze_data['y'])),
                     #           radius=100,
                     #           color=(0, 0, 255),
@@ -291,13 +292,13 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                         cv2.rectangle(reference_img, tag.corners[0], tag.corners[2], color=(0, 255, 0),
                                                  thickness=10)
 
-                params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
-                reference_img = cv2.resize(reference_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
-                image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
+                params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
+                image = cv2.imencode('.jpg', reference_img, params)[1].tobytes()
 
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
             else:
+                print(len(tags))
                 reference_img = copy.deepcopy(ref_img)
                 if mode == 'simple' and last_gaze is not None:
                     reference_img = utils.set_simple_pointer(settings, last_gaze, reference_img, pointer_imgs)
@@ -309,10 +310,8 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                 elif mode == 'tag_test':
                     reference_img = image
 
-                params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
-                reference_img = cv2.resize(reference_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
-                # print(reference_img.shape)
-                image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
+                params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
+                image = cv2.imencode('.jpg', reference_img, params)[1].tobytes()
 
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
@@ -327,7 +326,7 @@ def gen_frames(camera_id):
 
         frame_of_each_camera[int(camera_id)] = frame
         gaze_of_each_camera[int(camera_id)] = gaze
-        cv.circle(
+        cv2.circle(
             frame.bgr_pixels,
             (int(gaze.x), int(gaze.y)),
             radius=80,
@@ -335,8 +334,8 @@ def gen_frames(camera_id):
             thickness=15,
         )
         image = frame.bgr_pixels
-        params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
-        image = cv.imencode('.jpg', image, params)[1].tobytes()
+        params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
+        image = cv2.imencode('.jpg', image, params)[1].tobytes()
         yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'  # concat frame one by one and show result
 
 
@@ -358,7 +357,7 @@ def gen_frames(camera_id):
 #     image = frame.bgr_pixels
 
 #     img_copy = copy.deepcopy(image)
-#     img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
+#     img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2GRAY)
 #     tags = at_detector.detect(
 #             img_copy,
 #             estimate_tag_pose=False,
