@@ -7,10 +7,22 @@
 
 <body>
 
-  <div class="split left">
     <div class="container">
       <img src="{{ url_for('mapped_gaze_feed', artwork_id='{}'.format(artwork_id))}}" alt="Mapped View" class="image-world" width="30px" height="15px">
-    </div> 
-  </div>
+    </div>
+
+    <script>
+        // Send screen resolution to server
+        window.onload = function () {
+            var screenWidth = window.innerWidth;
+            var screenHeight = window.innerHeight;
+
+            console.log(screenHeight)
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/screen_resolution", true);
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr.send(JSON.stringify({"width": screenWidth, "height": screenHeight}));
+        };
+    </script>
 </body>
 </html>

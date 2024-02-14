@@ -1,10 +1,10 @@
 # import imp
-from flask import Flask, render_template, Response, stream_with_context
+from flask import Flask, render_template, Response, stream_with_context, request
 
 import utils
 from extensions import db_config
 
-from pupil_labs.realtime_api.simple import discover_devices
+from pupil_labs.realtime_api.simple import discover_devices, Device
 import cv2 as cv
 import copy
 import os
@@ -14,6 +14,7 @@ import json
 import time
 import threading
 from artworks.views import artwork_blueprint
+from settings.views import settings_blueprint
 from flask_bootstrap import Bootstrap
 from artworks.models import Artwork
 from gaze_data.models import GazeData, GazeType
@@ -30,10 +31,14 @@ else:
     app.config.from_pyfile("config_example.py")
 db_config.init_db(app)
 app.register_blueprint(artwork_blueprint, url_prefix="/artworks")
+app.register_blueprint(settings_blueprint, url_prefix="/settings")
 bootstrap = Bootstrap(app)
 
 print("Searching for cameras...")
-cameras = discover_devices(search_duration_seconds=5.0)
+# cameras = discover_devices(search_duration_seconds=5.0)
+# cameras = []
+# cameras = [Device("10.181.64.240", 8080)]
+cameras = [Device("10.181.112.159", 8080)]
 
 number_of_cameras = len(cameras)
 
@@ -41,6 +46,8 @@ print(number_of_cameras, " device(s) connected.")
 
 frame_of_each_camera = [None] * number_of_cameras
 gaze_of_each_camera = [None] * number_of_cameras
+screen_height = 1080
+screen_width = 1920
 
 # for testing
 
@@ -105,6 +112,7 @@ def devices_info_feed(id):
 
 @app.route('/video_feed/<string:id>/', methods=["GET"])
 def video_feed(id):
+    print("id", id)
     return Response(gen_frames(id),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -120,9 +128,19 @@ def mapped_gaze_torch_feed(artwork_id):
     return Response(gen_mapped_gaze(int(artwork_id), mode='torch'),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+
 @app.route('/tag_test/<string:artwork_id>/')
 def tag_test_feed(artwork_id):
     return Response(gen_mapped_gaze(int(artwork_id), mode="tag_test"), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/screen_resolution', methods=['POST'])
+def set_screen_resolution():
+    global screen_width, screen_height
+    data = request.get_json()
+    screen_width = data['width']
+    screen_height = data['height']
+    print("screen height", screen_height, screen_width)
+    return 'Screen resolution set successfully'
 
 
 # def detect_april_tags(frame):
@@ -151,21 +169,30 @@ sem = threading.Semaphore()
 
 # gaze_data = {"x":100, "y":100}
 
+pointer_imgs = [cv2.imread("static/crosshair.png", cv2.IMREAD_UNCHANGED),
+                cv2.imread("static/circleWire.png", cv2.IMREAD_UNCHANGED),
+                cv2.imread("static/circleFull.png", cv2.IMREAD_UNCHANGED),
+                cv2.imread("static/circleGradient.png", cv2.IMREAD_UNCHANGED)]
+
 
 def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
     last_gaze = None
     last_torch_mask = None
     with app.app_context():
         artwork = db_config.db.session.query(Artwork).get(int(artwork_id))
+        settings = db_config.db.session.query(Settings).first()
+
     image_path = artwork.image_path
     ref_img = cv.imread(image_path, cv2.IMREAD_COLOR)
     shape_ref_img = ref_img.shape
+    print(shape_ref_img)
     height_ref_img = shape_ref_img[0]
     width_ref_img = shape_ref_img[1]
     at_detector = None
     aruco_detector = None
     uncommited_gaze_data_count = 0
-    if tag_type=='april':
+    print(tag_type)
+    if tag_type == 'april':
         at_detector = Detector(
             families='tag36h11',
             nthreads=4,
@@ -181,10 +208,14 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
 
     if number_of_cameras == 0:
         params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
+        ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
         image = cv.imencode('.jpg', ref_img, params)[1].tobytes()
         yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
     image = None
+    # reference_img = copy.deepcopy(ref_img)
+    # reference_img = utils.set_simple_pointer(settings, {"x": 400, "y": 500}, reference_img, pointer_imgs)
+    # reference_img = utils.set_simple_pointer(settings, {"x": 0.5, "y": 0.5}, reference_img, pointer_imgs)
     while True:
         tags = []
         try:
@@ -216,19 +247,19 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                 mapped_gaze = get_mapped_gaze(tags, gaze, height_ref_img, width_ref_img)
 
                 gaze_data = {"x": mapped_gaze[0], "y": mapped_gaze[1]}
-                gaze_data_object = GazeData()
-                gaze_data_object.artwork_id = artwork_id
-                gaze_data_object.gaze_position_x = gaze_data['x'] / width_ref_img
-                gaze_data_object.gaze_position_y = gaze_data['y'] / height_ref_img
-                gaze_data_object.eyetracker_id = 0
-                gaze_data_object.gaze_type = GazeType.simple if mode == 'simple' else GazeType.torch
-                with app.app_context():
-                    db_config.db.session.add(gaze_data_object)
-                    uncommited_gaze_data_count += 1
-                    if uncommited_gaze_data_count > 5:
-                        db_config.db.session.commit()
-                        uncommited_gaze_data_count = 0
-                    reference_img = copy.deepcopy(ref_img)
+                # gaze_data_object = GazeData()
+                # gaze_data_object.artwork_id = artwork_id
+                # gaze_data_object.gaze_position_x = gaze_data['x'] / width_ref_img
+                # gaze_data_object.gaze_position_y = gaze_data['y'] / height_ref_img
+                # gaze_data_object.eyetracker_id = 0
+                # gaze_data_object.gaze_type = GazeType.simple if mode == 'simple' else GazeType.torch
+                # with app.app_context():
+                #     db_config.db.session.add(gaze_data_object)
+                #     uncommited_gaze_data_count += 1
+                #     if uncommited_gaze_data_count > 5:
+                #         db_config.db.session.commit()
+                #         uncommited_gaze_data_count = 0
+                reference_img = copy.deepcopy(ref_img)
 
                 if gaze_data['x'] > 0 and gaze_data['y'] > 0 and gaze_data['x'] < width_ref_img and \
                         gaze_data['y'] < height_ref_img:
@@ -236,11 +267,12 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
 
                 if mode == 'simple':
                     # print(gaze_data)
-                    cv.circle(reference_img,  # red gaze
-                              (int(gaze_data['x']), int(gaze_data['y'])),
-                              radius=100,
-                              color=(0, 0, 255),
-                              thickness=15)
+                    # cv.circle(reference_img,  # red gaze
+                    #           (int(gaze_data['x']), int(gaze_data['y'])),
+                    #           radius=100,
+                    #           color=(0, 0, 255),
+                    #           thickness=15)
+                    reference_img = utils.set_simple_pointer(settings, gaze_data, reference_img, pointer_imgs)
                 elif mode == 'torch':
                     new_mask = np.zeros_like(reference_img)
                     new_mask = cv2.circle(new_mask,  # torch light
@@ -260,6 +292,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                                                  thickness=10)
 
                 params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                reference_img = cv2.resize(reference_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
                 image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
 
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
@@ -267,11 +300,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
             else:
                 reference_img = copy.deepcopy(ref_img)
                 if mode == 'simple' and last_gaze is not None:
-                    cv.circle(reference_img,  # red gaze
-                              (int(last_gaze['x']), int(last_gaze['y'])),
-                              radius=100,
-                              color=(0, 0, 255),
-                              thickness=15)
+                    reference_img = utils.set_simple_pointer(settings, last_gaze, reference_img, pointer_imgs)
 
                 if mode == 'torch':
                     mask = last_torch_mask if last_torch_mask is not None else np.zeros_like(reference_img)
@@ -281,6 +310,8 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                     reference_img = image
 
                 params = [cv.IMWRITE_JPEG_QUALITY, 50, cv.IMWRITE_JPEG_OPTIMIZE, 1]
+                reference_img = cv2.resize(reference_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
+                # print(reference_img.shape)
                 image = cv.imencode('.jpg', reference_img, params)[1].tobytes()
 
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'

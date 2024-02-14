@@ -5,6 +5,7 @@ import pupil_apriltags
 
 # to sort coordinates
 from functools import reduce
+from settings.models import Settings
 import operator
 import math
 
@@ -154,3 +155,28 @@ def get_mapped_gaze(tags, gaze, height, width):
     mapped_gaze = cv2.perspectiveTransform(gaze_coord, M)
 
     return (int(mapped_gaze[0][0][0]), int(mapped_gaze[0][0][1]))
+
+
+def set_simple_pointer(settings: Settings, gaze_data: dict, reference_img, pointer_imgs: list):
+    selected_image = pointer_imgs[settings.pointer_id]
+    # print(np.max(selected_image[:, :, 3]))
+    img_h, img_w, c = reference_img.shape
+    max_img_l = min(img_h, img_w)
+    pointer_size_pixel = (settings.pointer_size) * 0.1 * max_img_l
+
+    resized_pointer = cv2.resize(selected_image, (int(pointer_size_pixel), int(pointer_size_pixel)),
+                                 interpolation=cv2.INTER_NEAREST)
+    alpha_channel = resized_pointer[:, :, 3] / 255.0
+    inverse_alpha = 1.0 - alpha_channel
+    resized_pointer = resized_pointer[:, :, 0:3]
+    start_pos = [int(gaze_data['x'] - pointer_size_pixel / 2), int(gaze_data['y'] - pointer_size_pixel / 2)]
+    if start_pos[0] < 0: start_pos[0] = 0
+    if start_pos[1] < 0: start_pos[1] = 0
+    end_pos = [int(start_pos[0] + pointer_size_pixel), int(start_pos[1] + pointer_size_pixel)]
+    print(pointer_size_pixel, start_pos, end_pos)
+    # end_pos = [int(gaze_data['x'] + pointer_size_pixel / 2), int(gaze_data['y'] + pointer_size_pixel / 2)]
+    a = (resized_pointer[:, :, 0] * alpha_channel)
+    for i in range(0, 3):
+        reference_img[start_pos[1]: end_pos[1], start_pos[0]: end_pos[0], i] = (resized_pointer[:,:,i] * alpha_channel) + (
+                reference_img[start_pos[1]: end_pos[1], start_pos[0]: end_pos[0], i] * inverse_alpha)
+    return reference_img
