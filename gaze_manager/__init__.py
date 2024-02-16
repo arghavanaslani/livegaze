@@ -1,6 +1,6 @@
 import queue
-from gaze_thread import GazeUpdateThread
-from models import GazeData
+from .gaze_thread import GazeUpdateThread
+from .models import GazeData
 
 class GazeManager:
     def __init__(self):

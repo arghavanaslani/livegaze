@@ -7,7 +7,7 @@ db = SQLAlchemy()
 def init_db(app):
     db.init_app(app)
     from artworks.models import Artwork
-    from gaze_data.models import GazeData
+    from gaze_manager.models import GazeDatabaseModel
     with app.app_context():
         Base.metadata.create_all(db.engine)
         db.create_all()

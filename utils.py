@@ -203,22 +203,3 @@ def set_simple_pointer(settings: Settings, gaze_data: dict, reference_img, point
              (reference_img[start_pos[0]: end_pos[0], start_pos[1]: end_pos[1], i] *
               inverse_alpha[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1]]))
     return reference_img
-
-
-tag_images = [cv2.imread("static/tags/aruco0.png"), cv2.imread("static/tags/aruco1.png"),
-              cv2.imread("static/tags/aruco2.png"), cv2.imread("static/tags/aruco3.png")]
-tag_rel_size = 0.25
-
-
-def add_tags(ref_img):
-    img_h, img_w, c = ref_img.shape
-    min_img_l = min(img_h, img_w)
-    scaled_size = int(min_img_l * tag_rel_size)
-    resized_images = []
-    for tag_image in tag_images:
-        resized_images.append(cv2.resize(tag_image, (scaled_size, scaled_size), cv2.INTER_LINEAR))
-    ref_img[0:scaled_size, 0:scaled_size] = resized_images[0]
-    ref_img[0:scaled_size, img_w - scaled_size: img_w] = resized_images[1]
-    ref_img[img_h - scaled_size: img_h, 0: scaled_size] = resized_images[2]
-    ref_img[img_h - scaled_size: img_h, img_w - scaled_size:img_w] = resized_images[3]
-    return ref_img, int(scaled_size / 2)

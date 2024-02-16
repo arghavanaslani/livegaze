@@ -1,10 +1,14 @@
-from flask import Blueprint, render_template, current_app, redirect, url_for, flash
+from flask import Blueprint, render_template, current_app, redirect, url_for, flash, Response
+
+from .utils import gen_artwork_img
 from .forms import ArtworkForm
 from .models import Artwork
+from settings.models import Settings
 from werkzeug.utils import secure_filename
 from extensions.db_config import db
 import os
 from .utils import get_unique_filename
+
 artwork_blueprint = Blueprint('artworks', __name__)
 
 
@@ -13,7 +17,6 @@ def get_artworks():
     artworks = db.session.query(Artwork).all()
     return render_template('artworks/artworks.html',
                            title='Artworks', artworks=artworks)
-    pass
 
 
 @artwork_blueprint.route('/new', methods=['GET', 'POST'])
@@ -32,4 +35,11 @@ def add_artwork():
         flash('Artwork has been successfully added')
         return redirect(url_for('artworks.add_artwork'))
     return render_template('artworks/add_artworks.html', form=form, title='Add Artwork')
-    pass
+
+
+@artwork_blueprint.route('/simple/<string:artwork_id>/<string:screen_height>/<string:screen_width>')
+def mapped_gaze_feed(artwork_id, screen_height, screen_width):
+    artwork = db.session.query(Artwork).get(artwork_id)
+    settings = db.session.query(Settings).first()
+    return Response(gen_artwork_img(int(artwork_id), 'simple', int(screen_width), int(screen_height), artwork, settings),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')

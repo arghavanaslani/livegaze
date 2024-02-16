@@ -1,4 +1,6 @@
 # import imp
+from flask_socketio import SocketIO
+
 from flask import Flask, render_template, Response, stream_with_context, request
 
 import utils
@@ -16,13 +18,15 @@ from artworks.views import artwork_blueprint
 from settings.views import settings_blueprint
 from flask_bootstrap import Bootstrap
 from artworks.models import Artwork
-from gaze_data.models import GazeData, GazeType
+from gaze_manager import GazeManager
 
 import random
 
 thread = None
 
 app = Flask(__name__)
+socket_io = SocketIO(app)
+app.app_context().push()
 
 if os.path.exists('config.py'):
     app.config.from_pyfile("config.py")
@@ -36,7 +40,7 @@ bootstrap = Bootstrap(app)
 print("Searching for cameras...")
 cameras = discover_devices(search_duration_seconds=5.0)
 # cameras = []
-cameras = [Device("192.168.204.225", 8080)]
+# cameras = [Device("192.168.204.225", 8080)]
 # cameras = [Device("10.181.192.18", 8080)]
 
 number_of_cameras = len(cameras)
