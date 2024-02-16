@@ -157,12 +157,14 @@ def get_mapped_gaze(tags, gaze, height, width, tag_half_l):
     return (int(mapped_gaze[0][0][0]), int(mapped_gaze[0][0][1]))
 
 
+pointer_rel_size = 0.5
+
 def set_simple_pointer(settings: Settings, gaze_data: dict, reference_img, pointer_imgs: list):
     selected_image = pointer_imgs[settings.pointer_id]
     # print(np.max(selected_image[:, :, 3]))
     img_h, img_w, c = reference_img.shape
     min_img_l = min(img_h, img_w)
-    pointer_size_pixel = int((settings.pointer_size) * 0.1 * min_img_l)
+    pointer_size_pixel = int((settings.pointer_size) * pointer_rel_size * min_img_l)
 
     resized_pointer = cv2.resize(selected_image, (int(pointer_size_pixel), int(pointer_size_pixel)),
                                  interpolation=cv2.INTER_NEAREST)

@@ -34,10 +34,10 @@ app.register_blueprint(settings_blueprint, url_prefix="/settings")
 bootstrap = Bootstrap(app)
 
 print("Searching for cameras...")
-# cameras = discover_devices(search_duration_seconds=5.0)
+cameras = discover_devices(search_duration_seconds=5.0)
 # cameras = []
-# cameras = [Device("10.181.64.240", 8080)]
-cameras = [Device("10.181.192.18", 8080)]
+cameras = [Device("192.168.204.225", 8080)]
+# cameras = [Device("10.181.192.18", 8080)]
 
 number_of_cameras = len(cameras)
 
@@ -186,7 +186,6 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
     ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
 
     ref_img, tag_half_l = utils.add_tags(ref_img)
-    print(tag_half_l)
     shape_ref_img = ref_img.shape
     height_ref_img = shape_ref_img[0]
     width_ref_img = shape_ref_img[1]
@@ -298,7 +297,6 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
                 yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
             else:
-                print(len(tags))
                 reference_img = copy.deepcopy(ref_img)
                 if mode == 'simple' and last_gaze is not None:
                     reference_img = utils.set_simple_pointer(settings, last_gaze, reference_img, pointer_imgs)
