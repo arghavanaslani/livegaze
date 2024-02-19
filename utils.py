@@ -43,7 +43,11 @@ def sort_poses(tags):
                                                                math.degrees(math.atan2(
                                                                    *tuple(map(operator.sub, item[1], center))[
                                                                     ::-1]))) % 360))
+    res_items = list(res.items())
+    print("items",tags[res_items[0][0]].tag_id, tags[res_items[1][0]].tag_id, tags[res_items[2][0]].tag_id,
+          tags[res_items[3][0]].tag_id)
 
+    print("values",res.values())
     return res
 
 
@@ -123,7 +127,7 @@ def detect_tags(image, aruco_detector: cv2.aruco.ArucoDetector = None, at_detect
         return tags
 
 
-def get_mapped_gaze(tags, gaze, height, width, tag_half_l):
+def get_mapped_gaze(tags: list[ArucoTag], gaze, height, width, tag_half_l):
     tags_sorted_by_center = sort_poses(tags)
     sorted_coords = list(tags_sorted_by_center.values())
 

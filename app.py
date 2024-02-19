@@ -1,7 +1,8 @@
 # import imp
-from flask_socketio import SocketIO
 
 from flask import Flask, render_template, Response, stream_with_context, request
+from gaze_manager.events import socket_io
+from artworks import utils as artworks_utils
 
 import utils
 from extensions import db_config
@@ -25,7 +26,7 @@ import random
 thread = None
 
 app = Flask(__name__)
-socket_io = SocketIO(app)
+socket_io.init_app(app)
 app.app_context().push()
 
 if os.path.exists('config.py'):
@@ -38,10 +39,10 @@ app.register_blueprint(settings_blueprint, url_prefix="/settings")
 bootstrap = Bootstrap(app)
 
 print("Searching for cameras...")
-cameras = discover_devices(search_duration_seconds=5.0)
+# cameras = discover_devices(search_duration_seconds=5.0)
 # cameras = []
 # cameras = [Device("192.168.204.225", 8080)]
-# cameras = [Device("10.181.192.18", 8080)]
+cameras = [Device("10.181.112.159", 8080)]
 
 number_of_cameras = len(cameras)
 
@@ -189,7 +190,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
     ref_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
     ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
 
-    ref_img, tag_half_l = utils.add_tags(ref_img)
+    ref_img, tag_half_l = artworks_utils.add_tags(ref_img)
     shape_ref_img = ref_img.shape
     height_ref_img = shape_ref_img[0]
     width_ref_img = shape_ref_img[1]

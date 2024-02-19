@@ -24,9 +24,9 @@ class GazeDatabaseModel(Base):
 
 
 class GazeData:
-    def __init__(self, camera_id: int, timestamp: int, pos_x: float, pos_y: float, stim_id: int):
-        self.camera_id: int = camera_id
+    def __init__(self, camera_id: str, timestamp: float, x: float, y: float, stim_id: int):
+        self.camera_id: str = camera_id
         self.stim_id: int = stim_id
-        self.timestamp: int = timestamp
-        self.pos_x: float = pos_x
-        self.pos_y: float = pos_y
+        self.timestamp: float = timestamp
+        self.pos_x: float = x
+        self.pos_y: float = y
