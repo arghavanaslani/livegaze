@@ -1,7 +1,8 @@
 import copy
 import os
-
+import random
 import cv2
+import numpy as np
 
 from flask import current_app
 from artworks.models import Artwork
@@ -47,25 +48,19 @@ def add_tags(ref_img):
     return ref_img, int(scaled_size / 2)
 
 
-pointer_imgs = [cv2.imread("static/crosshair.png", cv2.IMREAD_UNCHANGED),
-                cv2.imread("static/circleWire.png", cv2.IMREAD_UNCHANGED),
-                cv2.imread("static/circleFull.png", cv2.IMREAD_UNCHANGED),
-                cv2.imread("static/circleGradient.png", cv2.IMREAD_UNCHANGED)]
-pointer_rel_size = 0.5
 
 
-def set_simple_pointer(settings: Settings, gaze_data: list[float], reference_img):
-    selected_image = pointer_imgs[settings.pointer_id]
+
+def set_simple_pointer(settings: Settings, gaze_data: list[float], reference_img, pointer_img):
     # print(np.max(selected_image[:, :, 3]))
     img_h, img_w, c = reference_img.shape
-    min_img_l = min(img_h, img_w)
-    pointer_size_pixel = int((settings.pointer_size) * pointer_rel_size * min_img_l)
 
-    resized_pointer = cv2.resize(selected_image, (int(pointer_size_pixel), int(pointer_size_pixel)),
-                                 interpolation=cv2.INTER_NEAREST)
-    alpha_channel = resized_pointer[:, :, 3] / 255.0
+    pointer_size_pixel, _, _ = pointer_img.shape
+    # resized_pointer = cv2.resize(pointer_img, (int(pointer_size_pixel), int(pointer_size_pixel)),
+    #                              interpolation=cv2.INTER_NEAREST)
+    alpha_channel = pointer_img[:, :, 3] / 255.0
     inverse_alpha = 1.0 - alpha_channel
-    resized_pointer = resized_pointer[:, :, 0:3]
+    resized_pointer = pointer_img[:, :, 0:3]
     start_pos = [int(gaze_data[1] - pointer_size_pixel / 2), int(gaze_data[0] - pointer_size_pixel / 2)]
     overlay_start_pos = [0, 0]
     overlay_end_pos = [pointer_size_pixel, pointer_size_pixel]
@@ -100,24 +95,48 @@ def set_simple_pointer(settings: Settings, gaze_data: list[float], reference_img
     return reference_img
 
 
-def gen_artwork_img(artwork_id: int, mode: str, screen_height: int, screen_width: int, artwork: Artwork, settings: Settings):
-    gaze_dict: dict[int, dict[int, GazeData]] = gaze_manager.show_data
+pointer_imgs = [cv2.imread("static/crosshairWhite.png", cv2.IMREAD_UNCHANGED),
+                cv2.imread("static/circleWireWhite.png", cv2.IMREAD_UNCHANGED),
+                cv2.imread("static/circleFullWhite.png", cv2.IMREAD_UNCHANGED),
+                cv2.imread("static/circleGradientWhite.png", cv2.IMREAD_UNCHANGED)]
+pointer_rel_size = 0.5
+
+
+def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: Artwork, settings: Settings):
+
+    eye_tracker_pointer = dict()
+
+    gaze_dict: dict[int, dict[str, GazeData]] = gaze_manager.show_data
 
     image_path = artwork.image_path
     ref_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    print("screen", screen_height, screen_width)
     ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
 
     ref_img, tag_half_l = add_tags(ref_img)
+    img_h, img_w, c = ref_img.shape
+    min_img_l = min(img_h, img_w)
+    pointer_size_pixel = int(settings.pointer_size * pointer_rel_size * min_img_l)
+    pointer_img = pointer_imgs[settings.pointer_id]
     while True:
         reference_image = copy.deepcopy(ref_img)
-        if artwork_id in gaze_dict:
-            gaze_data_dict = gaze_dict[artwork_id]
+        if artwork.tag_id in gaze_dict:
+            gaze_data_dict = gaze_dict[artwork.tag_id]
             for pointer in gaze_data_dict:
                 gaze_data = gaze_data_dict[pointer]
+                if gaze_data.camera_id in eye_tracker_pointer:
+                    pointer_img = eye_tracker_pointer[gaze_data.camera_id]
+                else:
+                    # color_int = random.randint(0, 255)
+                    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 1)
+                    color_np = np.array(color, dtype=np.uint8)
+                    pointer_img = cv2.resize(pointer_img, (int(pointer_size_pixel), int(pointer_size_pixel)),
+                                                                              interpolation=cv2.INTER_NEAREST)
+                    pointer_img *= color_np
+                    eye_tracker_pointer[gaze_data.camera_id] = pointer_img
+
                 gaze_coord = [gaze_data.pos_x * screen_width, gaze_data.pos_y * screen_height]
                 if mode == 'simple':
-                    reference_image = set_simple_pointer(settings, gaze_data, reference_image)
+                    reference_image = set_simple_pointer(settings, gaze_coord, reference_image, pointer_img)
                 elif mode == 'torch':
                     # TODO: torch
                     pass

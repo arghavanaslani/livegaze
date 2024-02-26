@@ -39,10 +39,10 @@ app.register_blueprint(settings_blueprint, url_prefix="/settings")
 bootstrap = Bootstrap(app)
 
 print("Searching for cameras...")
-# cameras = discover_devices(search_duration_seconds=5.0)
+cameras = discover_devices(search_duration_seconds=2.0)
 # cameras = []
 # cameras = [Device("192.168.204.225", 8080)]
-cameras = [Device("10.181.112.159", 8080)]
+# cameras = [Device("10.181.114.108", 8080)]
 
 number_of_cameras = len(cameras)
 

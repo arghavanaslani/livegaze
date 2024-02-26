@@ -41,5 +41,5 @@ def add_artwork():
 def mapped_gaze_feed(artwork_id, screen_height, screen_width):
     artwork = db.session.query(Artwork).get(artwork_id)
     settings = db.session.query(Settings).first()
-    return Response(gen_artwork_img(int(artwork_id), 'simple', int(screen_width), int(screen_height), artwork, settings),
+    return Response(gen_artwork_img('simple', int(screen_width), int(screen_height), artwork, settings),
                     mimetype='multipart/x-mixed-replace; boundary=frame')

@@ -5,7 +5,7 @@ from .models import GazeData
 
 
 class GazeUpdateThread(threading.Thread):
-    def __init__(self, gaze_queue: queue.Queue, show_data: dict[int, dict[int, GazeData]]):
+    def __init__(self, gaze_queue: queue.Queue, show_data: dict[int, dict[str, GazeData]]):
         super().__init__()
         self.gaze_queue = gaze_queue
         self.show_data = show_data
