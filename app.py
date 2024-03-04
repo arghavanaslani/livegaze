@@ -15,10 +15,12 @@ from utils import *
 import json
 import time
 import threading
+import signal
 from artworks.views import artwork_blueprint
 from settings.views import settings_blueprint
 from flask_bootstrap import Bootstrap
 from artworks.models import Artwork
+from signal_handlers import signal_int_handler
 from gaze_manager import GazeManager
 
 import random
@@ -47,6 +49,7 @@ cameras = discover_devices(search_duration_seconds=2.0)
 number_of_cameras = len(cameras)
 
 print(number_of_cameras, " device(s) connected.")
+signal.signal(signal.SIGINT, signal_int_handler)
 
 frame_of_each_camera = [None] * number_of_cameras
 gaze_of_each_camera = [None] * number_of_cameras
