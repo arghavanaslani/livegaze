@@ -52,13 +52,6 @@ itsdangerous==2.1.2
 jedi==0.18.2
 Jinja2==3.1.2
 jsonschema==4.17.3
-jupyter==1.0.0
-jupyter-console==6.6.3
-jupyter-server==1.23.6
-jupyter_client==7.4.9
-jupyter_core==4.12.0
-jupyterlab-pygments==0.2.2
-jupyterlab-widgets==3.0.5
 kazam==1.4.5
 keyring==10.6.0
 keyrings.alt==3.0

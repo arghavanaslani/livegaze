@@ -34,6 +34,13 @@ tag_images = [cv2.imread("static/tags/aruco0.png"), cv2.imread("static/tags/aruc
 tag_rel_size = 0.25
 
 
+def get_tag_scaled_size(ref_img):
+    img_h, img_w, c = ref_img.shape
+    min_img_l = min(img_h, img_w)
+    scaled_size = int(min_img_l * tag_rel_size)
+    return int(scaled_size / 2)
+
+
 def add_tags(ref_img):
     img_h, img_w, c = ref_img.shape
     min_img_l = min(img_h, img_w)
@@ -112,7 +119,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
     ref_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
     ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
 
-    ref_img, tag_half_l = add_tags(ref_img)
+    # ref_img, tag_half_l = add_tags(ref_img)
     img_h, img_w, c = ref_img.shape
     min_img_l = min(img_h, img_w)
     pointer_size_pixel = int(settings.pointer_size * pointer_rel_size * min_img_l)
@@ -143,6 +150,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                 elif mode == 'tag_test' and image is not None:
                     # TODO: tag test
                     pass
+        reference_image, _ = add_tags(reference_image)
 
         params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
         image = cv2.imencode('.jpg', reference_image, params)[1].tobytes()
