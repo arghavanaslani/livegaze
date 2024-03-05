@@ -37,14 +37,11 @@ tag_rel_size = 0.25
 def get_tag_scaled_size(ref_img):
     img_h, img_w, c = ref_img.shape
     min_img_l = min(img_h, img_w)
-    scaled_size = int(min_img_l * tag_rel_size)
-    return int(scaled_size / 2)
+    return int(min_img_l * tag_rel_size)
 
 
-def add_tags(ref_img):
+def add_tags(ref_img, scaled_size: int):
     img_h, img_w, c = ref_img.shape
-    min_img_l = min(img_h, img_w)
-    scaled_size = int(min_img_l * tag_rel_size)
     resized_images = []
     for tag_image in tag_images:
         resized_images.append(cv2.resize(tag_image, (scaled_size, scaled_size), cv2.INTER_LINEAR))
@@ -52,10 +49,7 @@ def add_tags(ref_img):
     ref_img[0:scaled_size, img_w - scaled_size: img_w] = resized_images[1]
     ref_img[img_h - scaled_size: img_h, 0: scaled_size] = resized_images[2]
     ref_img[img_h - scaled_size: img_h, img_w - scaled_size:img_w] = resized_images[3]
-    return ref_img, int(scaled_size / 2)
-
-
-
+    return ref_img
 
 
 def set_simple_pointer(settings: Settings, gaze_data: list[float], reference_img, pointer_img):
@@ -122,6 +116,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
     # ref_img, tag_half_l = add_tags(ref_img)
     img_h, img_w, c = ref_img.shape
     min_img_l = min(img_h, img_w)
+    tag_scaled_size = get_tag_scaled_size(ref_img)
     pointer_size_pixel = int(settings.pointer_size * pointer_rel_size * min_img_l)
     pointer_img = pointer_imgs[settings.pointer_id]
     while True:
@@ -141,7 +136,8 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                     pointer_img *= color_np
                     eye_tracker_pointer[gaze_data.camera_id] = pointer_img
 
-                gaze_coord = [gaze_data.pos_x * screen_width, gaze_data.pos_y * screen_height]
+                gaze_coord = [gaze_data.pos_x * (screen_width - tag_scaled_size) + int(tag_scaled_size / 2),
+                              gaze_data.pos_y * (screen_height - tag_scaled_size) + int(tag_scaled_size / 2)]
                 if mode == 'simple':
                     reference_image = set_simple_pointer(settings, gaze_coord, reference_image, pointer_img)
                 elif mode == 'torch':
@@ -150,7 +146,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                 elif mode == 'tag_test' and image is not None:
                     # TODO: tag test
                     pass
-        reference_image, _ = add_tags(reference_image)
+        reference_image = add_tags(reference_image, tag_scaled_size)
 
         params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
         image = cv2.imencode('.jpg', reference_image, params)[1].tobytes()

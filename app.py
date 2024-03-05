@@ -192,8 +192,9 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
     image_path = artwork.image_path
     ref_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
     ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
-
-    ref_img, tag_half_l = artworks_utils.add_tags(ref_img)
+    tag_scale_size = artworks_utils.get_tag_scaled_size(ref_img)
+    ref_img = artworks_utils.add_tags(ref_img,tag_scale_size)
+    tag_half_l = int(tag_scale_size / 2)
     shape_ref_img = ref_img.shape
     height_ref_img = shape_ref_img[0]
     width_ref_img = shape_ref_img[1]
