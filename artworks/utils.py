@@ -10,7 +10,19 @@ from gaze_manager import gaze_manager
 from settings.models import Settings
 from gaze_manager.models import GazeData
 
-# TODO: what to do with it??
+
+class RollingAverageList:
+    def __init__(self, n):
+        self.list: list[int] = [0] * n
+        self.update_index = 0
+
+    def set_value(self, val: int):
+        self.list[self.update_index] = val
+        self.update_index += 1
+        self.update_index %= len(self.list)
+
+    def get_average(self):
+        return sum(self.list) / len(self.list)
 
 
 def get_unique_filename(path):
@@ -101,6 +113,7 @@ pointer_imgs = [cv2.imread("static/crosshairWhite.png", cv2.IMREAD_UNCHANGED),
                 cv2.imread("static/circleFullWhite.png", cv2.IMREAD_UNCHANGED),
                 cv2.imread("static/circleGradientWhite.png", cv2.IMREAD_UNCHANGED)]
 pointer_rel_size = 0.5
+rolling_average_window = 10
 
 
 def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: Artwork, settings: Settings):
@@ -108,6 +121,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
     eye_tracker_pointer = dict()
 
     gaze_dict: dict[int, dict[str, GazeData]] = gaze_manager.show_data
+    gaze_past_pos: dict[str, list[RollingAverageList]] = dict()
 
     image_path = artwork.image_path
     ref_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
@@ -116,7 +130,9 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
     # ref_img, tag_half_l = add_tags(ref_img)
     img_h, img_w, c = ref_img.shape
     min_img_l = min(img_h, img_w)
-    tag_scaled_size = get_tag_scaled_size(ref_img)
+    tag_scaled_size_f = min_img_l * tag_rel_size
+    tag_scaled_size = int(tag_scaled_size_f)
+    # tag_scaled_size = get_tag_scaled_size(ref_img)
     pointer_size_pixel = int(settings.pointer_size * pointer_rel_size * min_img_l)
     pointer_img = pointer_imgs[settings.pointer_id]
     while True:
@@ -136,8 +152,17 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                     pointer_img *= color_np
                     eye_tracker_pointer[gaze_data.camera_id] = pointer_img
 
-                gaze_coord = [gaze_data.pos_x * (screen_width - tag_scaled_size) + int(tag_scaled_size / 2),
-                              gaze_data.pos_y * (screen_height - tag_scaled_size) + int(tag_scaled_size / 2)]
+                gaze_coord = [int(gaze_data.pos_x * (screen_width - tag_scaled_size_f) + tag_scaled_size / 2),
+                              int(gaze_data.pos_y * (screen_height - tag_scaled_size_f) + tag_scaled_size / 2)]
+                # if pointer in gaze_past_pos:
+                #     past_poses = gaze_past_pos[pointer]
+                # else:
+                #     past_poses = [RollingAverageList(5), RollingAverageList(5)]
+                #     gaze_past_pos[pointer] = past_poses
+                # past_poses[0].set_value(gaze_coord[0])
+                # past_poses[1].set_value(gaze_coord[1])
+                # gaze_coord = [past_poses[0].get_average(), past_poses[1].get_average()]
+
                 if mode == 'simple':
                     reference_image = set_simple_pointer(settings, gaze_coord, reference_image, pointer_img)
                 elif mode == 'torch':
