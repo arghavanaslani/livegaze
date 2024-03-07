@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/demostyle.css') }}">
+    <style>
+        body, html {
+         height: 100%;
+        }
+        .calib_img {
+                        /* The image used */
+              background-image: url("../static/calibration_img.png");
+
+              /* Full height */
+              height: 100%;
+
+              /* Center and scale the image nicely */
+              background-position: center;
+              background-repeat: no-repeat;
+              background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="calib_img"></div>
+</body>
+</html>

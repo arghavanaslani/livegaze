@@ -43,3 +43,8 @@ def mapped_gaze_feed(artwork_id, screen_height, screen_width):
     settings = db.session.query(Settings).first()
     return Response(gen_artwork_img('simple', int(screen_width), int(screen_height), artwork, settings),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+@artwork_blueprint.route('/calibration')
+def get_calib():
+    return render_template('calibration.html', title='Calibration')
