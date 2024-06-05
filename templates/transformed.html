@@ -15,17 +15,12 @@
     <script>
         // Send screen resolution to server
         window.onload = function () {
-            var screenWidth = window.innerWidth;
-            var screenHeight = window.innerHeight;
-
+            var screenWidth = window.innerWidth * window.devicePixelRatio
+            var screenHeight = window.innerHeight * window.devicePixelRatio;
             var img = document.getElementById('artworkImg');
+            img.style.height = window.innerHeight + 'px';
+            img.style.width = window.innerWidth + 'px';
             img.src = '../artworks/simple/{{ artwork_id }}/'+ screenWidth +'/' + screenHeight
-
-            console.log(screenHeight)
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/screen_resolution", true);
-            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xhr.send(JSON.stringify({"width": screenWidth, "height": screenHeight}));
         };
     </script>
 </body>

@@ -52,10 +52,12 @@ def get_tag_scaled_size(ref_img):
     return int(min_img_l * tag_rel_size)
 
 
-def add_tags(ref_img, scaled_size: int):
+def add_tags(ref_img, scaled_size: int, tag_images_index=0):
     img_h, img_w, c = ref_img.shape
     resized_images = []
-    for tag_image in tag_images:
+    tag_images_len = len(tag_images)
+    for i in range(tag_images_len):
+        tag_image = tag_images[(i + tag_images_index) % tag_images_len]
         resized_images.append(cv2.resize(tag_image, (scaled_size, scaled_size), cv2.INTER_LINEAR))
     ref_img[0:scaled_size, 0:scaled_size] = resized_images[0]
     ref_img[0:scaled_size, img_w - scaled_size: img_w] = resized_images[1]
@@ -73,7 +75,7 @@ def set_simple_pointer(settings: Settings, gaze_data: list[float], reference_img
     #                              interpolation=cv2.INTER_NEAREST)
     alpha_channel = pointer_img[:, :, 3] / 255.0
     inverse_alpha = 1.0 - alpha_channel
-    resized_pointer = pointer_img[:, :, 0:3]
+    # resized_pointer = pointer_img[:, :, 0:3]
     start_pos = [int(gaze_data[1] - pointer_size_pixel / 2), int(gaze_data[0] - pointer_size_pixel / 2)]
     overlay_start_pos = [0, 0]
     overlay_end_pos = [pointer_size_pixel, pointer_size_pixel]
@@ -98,10 +100,10 @@ def set_simple_pointer(settings: Settings, gaze_data: list[float], reference_img
     end_pos = [int(start_pos[0] + overlay_size[0]), int(start_pos[1] + overlay_size[1])]
     # print(pointer_size_pixel, start_pos, end_pos)
     # end_pos = [int(gaze_data['x'] + pointer_size_pixel / 2), int(gaze_data['y'] + pointer_size_pixel / 2)]
-    a = (resized_pointer[:, :, 0] * alpha_channel)
+    # a = (resized_pointer[:, :, 0] * alpha_channel)
     for i in range(0, 3):
         reference_img[start_pos[0]: end_pos[0], start_pos[1]: end_pos[1], i] = \
-            ((resized_pointer[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1], i] *
+            ((pointer_img[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1], i] *
               alpha_channel[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1]]) +
              (reference_img[start_pos[0]: end_pos[0], start_pos[1]: end_pos[1], i] *
               inverse_alpha[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1]]))
@@ -117,15 +119,25 @@ rolling_average_window = 10
 
 
 def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: Artwork, settings: Settings):
-
     eye_tracker_pointer = dict()
 
     gaze_dict: dict[int, dict[str, GazeData]] = gaze_manager.show_data
-    gaze_past_pos: dict[str, list[RollingAverageList]] = dict()
+    # gaze_past_pos: dict[str, list[RollingAverageList]] = dict()
 
     image_path = artwork.image_path
     ref_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
+    # create a black image with size of screen width and height
+    black_img = np.zeros((screen_height, screen_width, 3), np.uint8)
+    raw_h, raw_w, c = ref_img.shape
+    resize_h, resize_w = 0, 0
+    if raw_h / raw_w < screen_height / screen_width:
+        resize_h, resize_w = int(screen_width * raw_h / raw_w), screen_width
+    else:
+        resize_h, resize_w = screen_height, int(screen_height * raw_w / raw_h)
+    ref_img = cv2.resize(ref_img, (resize_w, resize_h), interpolation=cv2.INTER_NEAREST)
+    black_img[int((screen_height - resize_h) / 2):int((screen_height + resize_h) / 2),
+    int((screen_width - resize_w) / 2):int((screen_width + resize_w) / 2)] = ref_img
+    ref_img = black_img
 
     # ref_img, tag_half_l = add_tags(ref_img)
     img_h, img_w, c = ref_img.shape
@@ -139,8 +151,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
         reference_image = copy.deepcopy(ref_img)
         if artwork.tag_id in gaze_dict:
             gaze_data_dict = gaze_dict[artwork.tag_id]
-            for pointer in gaze_data_dict:
-                gaze_data = gaze_data_dict[pointer]
+            for pointer, gaze_data in gaze_data_dict.items():
                 if gaze_data.camera_id in eye_tracker_pointer:
                     pointer_img = eye_tracker_pointer[gaze_data.camera_id]
                 else:
@@ -148,10 +159,9 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                     color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 1)
                     color_np = np.array(color, dtype=np.uint8)
                     pointer_img = cv2.resize(pointer_img, (int(pointer_size_pixel), int(pointer_size_pixel)),
-                                                                              interpolation=cv2.INTER_NEAREST)
+                                             interpolation=cv2.INTER_NEAREST)
                     pointer_img *= color_np
                     eye_tracker_pointer[gaze_data.camera_id] = pointer_img
-
                 gaze_coord = [int(gaze_data.pos_x * (screen_width - tag_scaled_size_f) + tag_scaled_size / 2),
                               int(gaze_data.pos_y * (screen_height - tag_scaled_size_f) + tag_scaled_size / 2)]
                 # if pointer in gaze_past_pos:
@@ -171,7 +181,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                 elif mode == 'tag_test' and image is not None:
                     # TODO: tag test
                     pass
-        reference_image = add_tags(reference_image, tag_scaled_size)
+        reference_image = add_tags(reference_image, tag_scaled_size, artwork.id)
 
         params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
         image = cv2.imencode('.jpg', reference_image, params)[1].tobytes()

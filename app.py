@@ -40,30 +40,28 @@ app.register_blueprint(artwork_blueprint, url_prefix="/artworks")
 app.register_blueprint(settings_blueprint, url_prefix="/settings")
 bootstrap = Bootstrap(app)
 
-print("Searching for cameras...")
-cameras = discover_devices(search_duration_seconds=2.0)
+# print("Searching for cameras...")
+# cameras = discover_devices(search_duration_seconds=2.0)
 # cameras = []
 # cameras = [Device("192.168.204.225", 8080)]
 # cameras = [Device("10.181.114.108", 8080)]
 
-number_of_cameras = len(cameras)
+# number_of_cameras = len(cameras)
 
-print(number_of_cameras, " device(s) connected.")
+print(1, " device(s) connected.")
 signal.signal(signal.SIGINT, signal_int_handler)
 
-frame_of_each_camera = [None] * number_of_cameras
-gaze_of_each_camera = [None] * number_of_cameras
-screen_height = 1080
-screen_width = 1920
+frame_of_each_camera = [None] * 1
+gaze_of_each_camera = [None] * 1
 
 # for testing
 
-print(cameras)
+# print(cameras)
 
 
 @app.route('/', methods=["GET"])
 def index():
-    return render_template('demo.html', camera_ids=number_of_cameras)
+    return render_template('demo.html', camera_ids=2)
 
 
 # forms
@@ -85,36 +83,36 @@ def experiment():
 # effects
 @app.route('/transformed1')
 def transformed1():
-    return render_template('transformed1.html', camera_ids=number_of_cameras)
+    return render_template('transformed1.html', camera_ids=1)
 
 
 @app.route('/transformed/<string:artwork_id>')
 def transformed(artwork_id):
-    return render_template('transformed.html', camera_ids=number_of_cameras,
+    return render_template('transformed.html', camera_ids=1,
                            artwork_id=int(artwork_id))
 
 
 @app.route('/torch')
 def torch():
-    return render_template('torch.html', camera_ids=number_of_cameras)
+    return render_template('torch.html', camera_ids=1)
 
 
 @app.route('/torch_new/<string:artwork_id>')
 def torch_new(artwork_id):
-    return render_template('torch_new.html', camera_ids=number_of_cameras,
+    return render_template('torch_new.html', camera_ids=1,
                            artwork_id=int(artwork_id))
 
 
-@app.route('/devices_info/<string:id>/')
-def devices_info_feed(id):
-    def send_devices_info(id):
-        device = cameras[int(id)]
-
-        info_data = json.dumps({"phone_name": device.phone_name, "battery_level": device.battery_level_percent})
-        yield f"id: {id}\ndata: {info_data}\nevent: device_info\n\n"
-        time.sleep(60)
-
-    return Response(send_devices_info(id), mimetype='text/event-stream')
+# @app.route('/devices_info/<string:id>/')
+# def devices_info_feed(id):
+#     def send_devices_info(id):
+#         device = cameras[int(id)]
+#
+#         info_data = json.dumps({"phone_name": device.phone_name, "battery_level": device.battery_level_percent})
+#         yield f"id: {id}\ndata: {info_data}\nevent: device_info\n\n"
+#         time.sleep(60)
+#
+#     return Response(send_devices_info(id), mimetype='text/event-stream')
 
 
 @app.route('/video_feed/<string:id>/', methods=["GET"])
@@ -139,15 +137,6 @@ def mapped_gaze_torch_feed(artwork_id):
 @app.route('/tag_test/<string:artwork_id>/')
 def tag_test_feed(artwork_id):
     return Response(gen_mapped_gaze(int(artwork_id), mode="tag_test"), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/screen_resolution', methods=['POST'])
-def set_screen_resolution():
-    global screen_width, screen_height
-    data = request.get_json()
-    screen_width = data['width']
-    screen_height = data['height']
-    print("screen height", screen_height, screen_width)
-    return 'Screen resolution set successfully'
 
 
 # def detect_april_tags(frame):
@@ -191,7 +180,7 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
 
     image_path = artwork.image_path
     ref_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    ref_img = cv2.resize(ref_img, (screen_width, screen_height), interpolation=cv2.INTER_NEAREST)
+    ref_img = cv2.resize(ref_img, (1920, 1080), interpolation=cv2.INTER_NEAREST)
     tag_scale_size = artworks_utils.get_tag_scaled_size(ref_img)
     ref_img = artworks_utils.add_tags(ref_img,tag_scale_size)
     tag_half_l = int(tag_scale_size / 2)
@@ -215,10 +204,10 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
         aruco_params = cv2.aruco.DetectorParameters()
         aruco_detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_params)
 
-    if number_of_cameras == 0:
-        params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
-        image = cv2.imencode('.jpg', ref_img, params)[1].tobytes()
-        yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
+    # if number_of_cameras == 0:
+    #     params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
+    #     image = cv2.imencode('.jpg', ref_img, params)[1].tobytes()
+    #     yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
 
     image = None
     # reference_img = copy.deepcopy(ref_img)
@@ -326,24 +315,25 @@ def gen_mapped_gaze(artwork_id, mode='simple', tag_type='aruco'):
 
 
 def gen_frames(camera_id):
-    device = cameras[int(camera_id)]
+    yield None
+    # device = cameras[int(camera_id)]
 
-    while True:
-        frame, gaze = device.receive_matched_scene_video_frame_and_gaze()
-
-        frame_of_each_camera[int(camera_id)] = frame
-        gaze_of_each_camera[int(camera_id)] = gaze
-        cv2.circle(
-            frame.bgr_pixels,
-            (int(gaze.x), int(gaze.y)),
-            radius=80,
-            color=(0, 0, 255),
-            thickness=15,
-        )
-        image = frame.bgr_pixels
-        params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
-        image = cv2.imencode('.jpg', image, params)[1].tobytes()
-        yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'  # concat frame one by one and show result
+    # while True:
+    #     frame, gaze = device.receive_matched_scene_video_frame_and_gaze()
+    #
+    #     frame_of_each_camera[int(camera_id)] = frame
+    #     gaze_of_each_camera[int(camera_id)] = gaze
+    #     cv2.circle(
+    #         frame.bgr_pixels,
+    #         (int(gaze.x), int(gaze.y)),
+    #         radius=80,
+    #         color=(0, 0, 255),
+    #         thickness=15,
+    #     )
+    #     image = frame.bgr_pixels
+    #     params = [cv2.IMWRITE_JPEG_QUALITY, 50, cv2.IMWRITE_JPEG_OPTIMIZE, 1]
+    #     image = cv2.imencode('.jpg', image, params)[1].tobytes()
+    #     yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'  # concat frame one by one and show result
 
 
 # def gen_gaze_test(id):

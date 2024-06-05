@@ -46,24 +46,24 @@
   <div class="split left">
     {%for camera_id in range(0, camera_ids)%}
     <div class="container">
-      <img src="{{ url_for('video_feed', id='{}'.format(camera_id) ) }}" alt="Scene View" class="image-world" width="30px" height="30px">
-      <div class="overlay">
-        <div class="text">
-          <p id = "ID"> ID: {{camera_id}} </p>
-          <p id = "phone_name_{{camera_id}}"></p>
-          <p id = "battery_level_{{camera_id}}"></p>
-        </div>
-      </div>
+{#      <img src="{{ url_for('video_feed', id='{}'.format(camera_id) ) }}" alt="Scene View" class="image-world" width="30px" height="30px">#}
+{#      <div class="overlay">#}
+{#        <div class="text">#}
+{#          <p id = "ID"> ID: {{camera_id}} </p>#}
+{#          <p id = "phone_name_{{camera_id}}"></p>#}
+{#          <p id = "battery_level_{{camera_id}}"></p>#}
+{#        </div>#}
+{#      </div>#}
     </div> 
     <script>
-      var eventSource = new EventSource("{{ url_for('devices_info_feed', id='{}'.format(camera_id)) }}")
-      eventSource.addEventListener("device_info", function(e) {
-  
-        data = JSON.parse(e.data)
-        console.log(data)
-        document.querySelector("#phone_name_{{camera_id}}").innerText = "Name: " + data.phone_name
-        document.querySelector("#battery_level_{{camera_id}}").innerText = "Battery: " + data.battery_level + "%"
-      }, true)
+      {#var eventSource = new EventSource("{{ url_for('devices_info_feed', id='{}'.format(camera_id)) }}")#}
+      {#eventSource.addEventListener("device_info", function(e) {#}
+      {##}
+      {#  data = JSON.parse(e.data)#}
+      {#  console.log(data)#}
+      {#  document.querySelector("#phone_name_{{camera_id}}").innerText = "Name: " + data.phone_name#}
+      {#  document.querySelector("#battery_level_{{camera_id}}").innerText = "Battery: " + data.battery_level + "%"#}
+      {# }, true)#}
   
     </script>
   {%endfor%}
