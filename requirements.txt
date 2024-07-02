@@ -6,7 +6,7 @@ anyio==3.6.2
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 asn1crypto==0.24.0
-async-timeout==4.0.2
+async-timeout==4.0.3
 asynctest==0.13.0
 attrs==22.1.0
 av==9.2.0

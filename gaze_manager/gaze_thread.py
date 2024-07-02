@@ -2,6 +2,9 @@ import queue
 import threading
 
 from .models import GazeData
+from extensions.db_config import redis_client
+from extensions import redis_constants
+import json
 
 
 class GazeUpdateThread(threading.Thread):
@@ -13,10 +16,20 @@ class GazeUpdateThread(threading.Thread):
 
     def run(self):
         while not self.exit_flag:
-            gaze_data: GazeData = self.gaze_queue.get()
-            if gaze_data.stim_id not in self.show_data:
-                self.show_data[gaze_data.stim_id] = dict()
-            self.show_data[gaze_data.stim_id][gaze_data.camera_id] = gaze_data
+            eye_trackers = redis_client.smembers(redis_constants.TRACKERS_SET)
+            for eye_tracker in eye_trackers:
+                eye_tracker = eye_tracker.decode('utf-8')
+                data = redis_client.get(redis_constants.get_tracker_key(eye_tracker))
+                if data is not None:
+                    gaze_data = GazeData(**json.loads(data))
+                    if gaze_data.stim_id not in self.show_data:
+                        self.show_data[gaze_data.stim_id] = dict()
+                    self.show_data[gaze_data.stim_id][gaze_data.camera_id] = gaze_data
+                    # print(gaze_data.stim_id, gaze_data.camera_id, gaze_data.pos_x, gaze_data.pos_y)
+            # gaze_data: GazeData = self.gaze_queue.get()
+            # if gaze_data.stim_id not in self.show_data:
+            #     self.show_data[gaze_data.stim_id] = dict()
+            # self.show_data[gaze_data.stim_id][gaze_data.camera_id] = gaze_data
 
             # TODO: update DB?
     def stop_thread(self):

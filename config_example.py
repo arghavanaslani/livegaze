@@ -8,3 +8,4 @@ DB_PASSWORD = 'testPassword'
 SQLALCHEMY_DATABASE_URI = DB_TYPE+"://"+DB_USER+":"+DB_PASSWORD+"@"+DB_HOST+":"+str(DB_PORT)+"/"+DB_NAME
 SECRET_KEY="powerful secretkey",
 WTF_CSRF_SECRET_KEY="a csrf secret key"
+REDIS_URL = "redis://localhost:6379/0"

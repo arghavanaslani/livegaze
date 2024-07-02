@@ -21,6 +21,8 @@ from settings.views import settings_blueprint
 from flask_bootstrap import Bootstrap
 from artworks.models import Artwork
 from signal_handlers import signal_int_handler
+from flask import Flask
+from flask_redis import FlaskRedis
 from gaze_manager import GazeManager
 
 import random
@@ -48,7 +50,6 @@ bootstrap = Bootstrap(app)
 
 # number_of_cameras = len(cameras)
 
-print(1, " device(s) connected.")
 signal.signal(signal.SIGINT, signal_int_handler)
 
 frame_of_each_camera = [None] * 1

@@ -15,8 +15,10 @@
     <script>
         // Send screen resolution to server
         window.onload = function () {
-            var screenWidth = window.innerWidth * window.devicePixelRatio
-            var screenHeight = window.innerHeight * window.devicePixelRatio;
+            {#var screenWidth = window.innerWidth * window.devicePixelRatio#}
+            {#var screenHeight = window.innerHeight * window.devicePixelRatio;#}
+            var screenWidth = window.innerWidth;
+            var screenHeight = window.innerHeight;
             var img = document.getElementById('artworkImg');
             img.style.height = window.innerHeight + 'px';
             img.style.width = window.innerWidth + 'px';

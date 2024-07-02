@@ -122,6 +122,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
     eye_tracker_pointer = dict()
 
     gaze_dict: dict[int, dict[str, GazeData]] = gaze_manager.show_data
+    # print(len(gaze_manager.show_data))
     # gaze_past_pos: dict[str, list[RollingAverageList]] = dict()
 
     image_path = artwork.image_path
@@ -151,7 +152,8 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
         reference_image = copy.deepcopy(ref_img)
         if artwork.tag_id in gaze_dict:
             gaze_data_dict = gaze_dict[artwork.tag_id]
-            for pointer, gaze_data in gaze_data_dict.items():
+            gaze_data_dict_items = list(gaze_data_dict.items())
+            for pointer, gaze_data in gaze_data_dict_items:
                 if gaze_data.camera_id in eye_tracker_pointer:
                     pointer_img = eye_tracker_pointer[gaze_data.camera_id]
                 else:
