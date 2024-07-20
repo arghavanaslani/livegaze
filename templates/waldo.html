@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/demostyle.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+{#      <img src="{{ url_for('mapped_gaze_feed', artwork_id='{}'.format(artwork_id))}}" alt="Mapped View" class="image-world" width="30px" height="15px">#}
+        <img id="artworkImg" alt="Image">
+    </div>
+
+    <script>
+        // Send screen resolution to server
+        window.onload = function () {
+            {#var screenWidth = window.innerWidth * window.devicePixelRatio#}
+            {#var screenHeight = window.innerHeight * window.devicePixelRatio;#}
+            var screenWidth = window.innerWidth;
+            var screenHeight = window.innerHeight;
+            var img = document.getElementById('artworkImg');
+            img.style.height = window.innerHeight + 'px';
+            img.style.width = window.innerWidth + 'px';
+            console.log({{ waldo_id }});
+            img.src = '../{{ waldo_id }}/'+ screenWidth +'/' + screenHeight
+        };
+    </script>
+</body>
+</html>

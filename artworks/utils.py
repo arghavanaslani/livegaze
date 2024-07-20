@@ -66,7 +66,7 @@ def add_tags(ref_img, scaled_size: int, tag_images_index=0):
     return ref_img
 
 
-def set_simple_pointer(settings: Settings, gaze_data: list[float], reference_img, pointer_img):
+def set_simple_pointer(gaze_data: list[float], reference_img, pointer_img):
     # print(np.max(selected_image[:, :, 3]))
     img_h, img_w, c = reference_img.shape
 
@@ -147,7 +147,10 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
     tag_scaled_size = int(tag_scaled_size_f)
     # tag_scaled_size = get_tag_scaled_size(ref_img)
     pointer_size_pixel = int(settings.pointer_size * pointer_rel_size * min_img_l)
-    pointer_img = pointer_imgs[settings.pointer_id]
+    if mode == 'waldo':
+        white_pointer_img = pointer_imgs[1]
+    else:
+        white_pointer_img = pointer_imgs[settings.pointer_id]
     while True:
         reference_image = copy.deepcopy(ref_img)
         if artwork.tag_id in gaze_dict:
@@ -160,7 +163,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                     # color_int = random.randint(0, 255)
                     color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 1)
                     color_np = np.array(color, dtype=np.uint8)
-                    pointer_img = cv2.resize(pointer_img, (int(pointer_size_pixel), int(pointer_size_pixel)),
+                    pointer_img = cv2.resize(white_pointer_img, (int(pointer_size_pixel), int(pointer_size_pixel)),
                                              interpolation=cv2.INTER_NEAREST)
                     pointer_img *= color_np
                     eye_tracker_pointer[gaze_data.camera_id] = pointer_img
@@ -175,8 +178,8 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                 # past_poses[1].set_value(gaze_coord[1])
                 # gaze_coord = [past_poses[0].get_average(), past_poses[1].get_average()]
 
-                if mode == 'simple':
-                    reference_image = set_simple_pointer(settings, gaze_coord, reference_image, pointer_img)
+                if mode == 'simple' or mode == 'waldo':
+                    reference_image = set_simple_pointer(gaze_coord, reference_image, pointer_img)
                 elif mode == 'torch':
                     # TODO: torch
                     pass

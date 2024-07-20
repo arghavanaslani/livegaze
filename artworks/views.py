@@ -1,13 +1,13 @@
 from flask import Blueprint, render_template, current_app, redirect, url_for, flash, Response
 
-from .utils import gen_artwork_img
-from .forms import ArtworkForm
-from .models import Artwork
+from artworks.utils import gen_artwork_img
+from artworks.forms import ArtworkForm
+from artworks.models import Artwork
 from settings.models import Settings
 from werkzeug.utils import secure_filename
 from extensions.db_config import db
 import os
-from .utils import get_unique_filename
+from artworks.utils import get_unique_filename
 
 artwork_blueprint = Blueprint('artworks', __name__)
 

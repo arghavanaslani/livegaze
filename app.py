@@ -1,7 +1,9 @@
 # import imp
 
 from flask import Flask, render_template, Response, stream_with_context, request
-from gaze_manager.events import socket_io
+from gaze_manager.events import register_events
+from waldo.socketio_events import register_waldo_events
+from extensions.socket_io import socket_io
 from artworks import utils as artworks_utils
 
 import utils
@@ -18,6 +20,7 @@ import threading
 import signal
 from artworks.views import artwork_blueprint
 from settings.views import settings_blueprint
+from waldo.views import waldo_blueprint
 from flask_bootstrap import Bootstrap
 from artworks.models import Artwork
 from signal_handlers import signal_int_handler
@@ -30,7 +33,13 @@ import random
 thread = None
 
 app = Flask(__name__)
+
+# register socket io events
+register_events(socket_io)
+register_waldo_events(socket_io)
 socket_io.init_app(app)
+
+
 app.app_context().push()
 
 if os.path.exists('config.py'):
@@ -40,6 +49,7 @@ else:
 db_config.init_db(app)
 app.register_blueprint(artwork_blueprint, url_prefix="/artworks")
 app.register_blueprint(settings_blueprint, url_prefix="/settings")
+app.register_blueprint(waldo_blueprint, url_prefix="/waldo")
 bootstrap = Bootstrap(app)
 
 # print("Searching for cameras...")
@@ -89,8 +99,7 @@ def transformed1():
 
 @app.route('/transformed/<string:artwork_id>')
 def transformed(artwork_id):
-    return render_template('transformed.html', camera_ids=1,
-                           artwork_id=int(artwork_id))
+    return render_template('transformed.html', artwork_id=int(artwork_id))
 
 
 @app.route('/torch')
