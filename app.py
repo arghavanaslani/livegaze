@@ -148,6 +148,10 @@ def mapped_gaze_torch_feed(artwork_id):
 def tag_test_feed(artwork_id):
     return Response(gen_mapped_gaze(int(artwork_id), mode="tag_test"), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/simple')
+def simple():
+    return render_template('simple_artwork.html')
+
 
 # def detect_april_tags(frame):
 #     at_detector = Detector(

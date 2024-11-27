@@ -149,6 +149,7 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
     pointer_size_pixel = int(settings.pointer_size * pointer_rel_size * min_img_l)
     if mode == 'waldo':
         white_pointer_img = pointer_imgs[1]
+        pointer_size_pixel = int(pointer_size_pixel * 0.8)
     else:
         white_pointer_img = pointer_imgs[settings.pointer_id]
     while True:
