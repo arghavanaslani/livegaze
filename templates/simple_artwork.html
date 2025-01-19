@@ -4,10 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>artworkTest</title>
+    <script>
+        {#const arucoId = {{ aruco_id }}#}
+        const arucoId = 3
+
+        const boardId = {{ board_id }}
+        {#const boardId = 0;#}
+        {#const selectedMarkerId = {{ selected_label_id }};#}
+        const selectedMarkerId = 0;
+    </script>
+    <script src="{{ url_for('static', filename='js/openCV.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/simpleCanvasHandler.js') }}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/marker_manager.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/aruco/cv.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/aruco/aruco.js') }}"></script>
-
+    <script type="text/javascript" src="{{ url_for('static', filename='js/tag_place.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/eye_pos_placer.js') }}"></script>
     <style>
         body {
             margin:0;
@@ -51,42 +65,26 @@
             max-height: 100vh;
             object-fit: contain; /* Scale image to fit without cropping or distortion */
         }
+
+        .marker {
+            display: block;
+            max-width: 100vw;
+            max-height: 100vh;
+        }
     </style>
 </head>
 <body>
 
-<div id="arucoTag0" class="tag upper-left">
+<div id="arucoTag0" class="tag lower-right"></div>
+<div id="arucoTag1" class="tag lower-left"></div>
+<div id="arucoTag2" class="tag upper-left"></div>
+<div id="arucoTag3" class="tag upper-right"></div>
+
+<div id="bg">
+    <img id="bgImage"  class="background" alt="backgroundImage" src="../../{{ artwork_url }}">
 </div>
-<div id="arucoTag1" class="tag upper-right"></div>
-<div id="arucoTag2" class="tag lower-left"></div>
-<div id="arucoTag3" class="tag lower-right"></div>
-<div id="bg" class="background">
-    <img id="bgImage"  class="background" alt="backgroundImage">
+<div id="markerParent" class="background">
+
 </div>
-
-<script async src="{{ url_for('static', filename='js/openCV.js') }}"></script>
-<script src="{{ url_for('static', filename='js/simpleCanvasHandler.js') }}"></script>
-<script>
-    var dictionary = new AR.Dictionary("ARUCO");
-    var maxInput = dictionary.codeList.length - 1;
-    var arucoTag0 = document.getElementById("arucoTag0");
-    var arucoTag1 = document.getElementById("arucoTag1");
-    var arucoTag2 = document.getElementById("arucoTag2");
-    var arucoTag3 = document.getElementById("arucoTag3");
-    var arucoId = 0
-    {#var arucoId = {{ aruco_id }}#}
-
-    $(document).ready(function () {
-        arucoTag0.innerHTML = dictionary.generateSVG(arucoId);
-        arucoTag1.innerHTML = dictionary.generateSVG(arucoId + 1);
-        arucoTag2.innerHTML = dictionary.generateSVG(arucoId + 2);
-        arucoTag3.innerHTML = dictionary.generateSVG(arucoId + 3);
-    })
-
-    var bgImage = document.getElementById("bgImage");
-    bgImage.src = "../static/artworks/Martyrdom.png";
-
-
-</script>
 </body>
 </html>

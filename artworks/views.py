@@ -44,6 +44,21 @@ def mapped_gaze_feed(artwork_id, screen_height, screen_width):
     return Response(gen_artwork_img('simple', int(screen_width), int(screen_height), artwork, settings),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@artwork_blueprint.route('/torch/<string:artwork_id>/<string:screen_height>/<string:screen_width>')
+def get_torch_feed(artwork_id, screen_height, screen_width):
+    artwork = db.session.query(Artwork).get(artwork_id)
+    settings = db.session.query(Settings).first()
+    return Response(gen_artwork_img('torch', int(screen_width), int(screen_height), artwork, settings),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+@artwork_blueprint.route('/simple_js/<string:artwork_id>')
+def get_simple_js(artwork_id):
+    artwork = db.session.query(Artwork).get(artwork_id)
+    settings = db.session.query(Settings).first()
+    return render_template('simple_artwork.html', board_id=artwork_id, artwork_url=artwork.image_path,
+                           )
+
 
 @artwork_blueprint.route('/calibration')
 def get_calib():

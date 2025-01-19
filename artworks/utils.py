@@ -66,7 +66,7 @@ def add_tags(ref_img, scaled_size: int, tag_images_index=0):
     return ref_img
 
 
-def set_simple_pointer(gaze_data: list[float], reference_img, pointer_img):
+def set_pointer(gaze_data: list[float], reference_img, pointer_img, mode='simple', orig_image=None):
     # print(np.max(selected_image[:, :, 3]))
     img_h, img_w, c = reference_img.shape
 
@@ -101,10 +101,11 @@ def set_simple_pointer(gaze_data: list[float], reference_img, pointer_img):
     # print(pointer_size_pixel, start_pos, end_pos)
     # end_pos = [int(gaze_data['x'] + pointer_size_pixel / 2), int(gaze_data['y'] + pointer_size_pixel / 2)]
     # a = (resized_pointer[:, :, 0] * alpha_channel)
+    selected_image = (pointer_img[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1], :] if mode in ['simple', 'waldo']
+                      else orig_image[start_pos[0]: end_pos[0], start_pos[1]: end_pos[1], :])
     for i in range(0, 3):
         reference_img[start_pos[0]: end_pos[0], start_pos[1]: end_pos[1], i] = \
-            ((pointer_img[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1], i] *
-              alpha_channel[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1]]) +
+            ( (selected_image [:,:, i] * alpha_channel[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1]]) +
              (reference_img[start_pos[0]: end_pos[0], start_pos[1]: end_pos[1], i] *
               inverse_alpha[overlay_start_pos[0]:overlay_end_pos[0], overlay_start_pos[1]:overlay_end_pos[1]]))
     return reference_img
@@ -150,10 +151,14 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
     if mode == 'waldo':
         white_pointer_img = pointer_imgs[1]
         pointer_size_pixel = int(pointer_size_pixel * 0.8)
-    else:
+    elif mode == 'simple':
         white_pointer_img = pointer_imgs[settings.pointer_id]
+    elif mode == 'torch':
+        white_pointer_img = pointer_imgs[settings.pointer_id]
+        reference_image = np.zeros((screen_height, screen_width, 3), np.uint8)
     while True:
-        reference_image = copy.deepcopy(ref_img)
+        if mode in ['simple', 'waldo']:
+            reference_image = copy.deepcopy(ref_img)
         if artwork.tag_id in gaze_dict:
             gaze_data_dict = gaze_dict[artwork.tag_id]
             gaze_data_dict_items = list(gaze_data_dict.items())
@@ -161,12 +166,18 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                 if gaze_data.camera_id in eye_tracker_pointer:
                     pointer_img = eye_tracker_pointer[gaze_data.camera_id]
                 else:
-                    # color_int = random.randint(0, 255)
-                    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 1)
-                    color_np = np.array(color, dtype=np.uint8)
+                    color_int = random.random()
+                    # color_
+                    color = (random.random(), random.random(), random.random(), 1)
+                    # color = (color_int, color_int, color_int, 1)
+                    # print(color_int)
+                    color_np = np.array(color, dtype=np.float32)
                     pointer_img = cv2.resize(white_pointer_img, (int(pointer_size_pixel), int(pointer_size_pixel)),
                                              interpolation=cv2.INTER_NEAREST)
+
+                    pointer_img = pointer_img.astype(np.float32)
                     pointer_img *= color_np
+                    pointer_img = pointer_img.astype(np.uint8)
                     eye_tracker_pointer[gaze_data.camera_id] = pointer_img
                 gaze_coord = [int(gaze_data.pos_x * (screen_width - tag_scaled_size_f) + tag_scaled_size / 2),
                               int(gaze_data.pos_y * (screen_height - tag_scaled_size_f) + tag_scaled_size / 2)]
@@ -178,12 +189,8 @@ def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: A
                 # past_poses[0].set_value(gaze_coord[0])
                 # past_poses[1].set_value(gaze_coord[1])
                 # gaze_coord = [past_poses[0].get_average(), past_poses[1].get_average()]
-
-                if mode == 'simple' or mode == 'waldo':
-                    reference_image = set_simple_pointer(gaze_coord, reference_image, pointer_img)
-                elif mode == 'torch':
-                    # TODO: torch
-                    pass
+                if mode in ['simple', 'waldo', 'torch']:
+                    reference_image = set_pointer(gaze_coord, reference_image, pointer_img, mode=mode, orig_image= ref_img if mode == 'torch' else None)
                 elif mode == 'tag_test' and image is not None:
                     # TODO: tag test
                     pass

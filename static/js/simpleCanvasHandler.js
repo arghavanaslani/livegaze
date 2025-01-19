@@ -13,6 +13,6 @@ let imgElement = document.getElementById('imageSrc');
 var Module = {
   // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
   onRuntimeInitialized() {
-    document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+    // document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
   }
 };
