@@ -56,8 +56,14 @@ def get_torch_feed(artwork_id, screen_height, screen_width):
 def get_simple_js(artwork_id):
     artwork = db.session.query(Artwork).get(artwork_id)
     settings = db.session.query(Settings).first()
-    return render_template('simple_artwork.html', board_id=artwork_id, artwork_url=artwork.image_path,
-                           )
+    context = {
+        'artwork_url': artwork.image_path,
+        'board_id': artwork_id,
+        'pointer_size': settings.pointer_size,
+        'aruco_id' : artwork.tag_id,
+        'selected_label_id' : 0,
+    }
+    return render_template('simple_artwork.html', **context)
 
 
 @artwork_blueprint.route('/calibration')

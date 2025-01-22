@@ -20,7 +20,6 @@ def register_events(socket_io):
         # gaze_data: GazeData = json.loads(data, object_hook=lambda d: GazeData(**d))
         if not gaze_manager.update_thread.is_alive():
             gaze_manager.update_thread.start()
-        print("received gaze data", gaze_data.pos_x, gaze_data.pos_y, gaze_data.stim_id)
         # gaze_manager.gaze_queue.put(gaze_data)
         redis_client.sadd(redis_constants.TRACKERS_SET,gaze_data.camera_id)
         redis_client.set(redis_constants.get_tracker_key(gaze_data.camera_id), json.dumps(data))
