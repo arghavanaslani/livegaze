@@ -37,7 +37,7 @@ function parse_gaze_data(data) {
     let tag_size = tag.getBoundingClientRect().width;
     for (let tracker_id in data) {
         if (markerBases[tracker_id] === undefined) {
-            const color = getRandomColor()
+            let color = getRandomColor()
             let markerBase = document.createElement('div');
             markerBase.style.position = "absolute";
 
@@ -47,13 +47,41 @@ function parse_gaze_data(data) {
 
             fetch(selected_marker_url).then(response => response.text()).then(svgContent => {
                 markerBase.innerHTML = svgContent
+
+                const style = markerBase.querySelector('style');
+                if (style) {
+                    console.log("style found")
+                    style.textContent = style.textContent.replace(/\.cls-1/g, `.cls-1-${tracker_id}`);
+                }
+
+                const ellipse = markerBase.querySelector('ellipse');
+                if (ellipse) {
+                    ellipse.setAttribute('class', `cls-1-${tracker_id}`);
+                }
+
+                const radialGradient = markerBase.querySelector('#radial-gradient');
+                if (radialGradient) {
+                    const newId = 'radial-gradient-'+tracker_id;
+                    radialGradient.id = newId;
+
+                    // Update all references to the old ID in the SVG
+                    const style = markerBase.querySelector('style');
+                    if (style) {
+                        style.textContent = style.textContent.replace(/#radial-gradient/g, `#${newId}`);
+                    }
+
+                    // Update any other references within the SVG
+                    const elementsUsingGradient = markerBase.querySelectorAll(`[fill="url(#radial-gradient)"]`);
+                    elementsUsingGradient.forEach(el => {
+                        el.setAttribute('fill', `url(#${newId})`);
+                    });
+                }
+
                 if (selectedMarkerId === 0) {
                     const stops = markerBase.querySelectorAll('stop')
                     stops.forEach(stop => {
                         stop.setAttribute('stop-color', color);
                     })
-                } else if (selectedMarkerId === 1) {
-                    //TODO: implement
                 }
             }).catch(error => {
                 console.error('Error fetching the SVG:', error);
