@@ -37,3 +37,8 @@ def register_events(socket_io):
         redis_client.sadd(redis_constants.BOARD_TRACKERS_SET,board_id)
         join_room("board_" + board_id)
         emit("subscribed to gaze data", {'room': "board_" + board_id})
+
+    @socket_io.on('ping')
+    def ping():
+        print("ping received")
+        emit('pong')
