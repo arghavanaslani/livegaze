@@ -92,5 +92,9 @@ def torch_new(artwork_id):
     return render_template('torch_new.html', camera_ids=1,
                            artwork_id=int(artwork_id))
 
+@app.route('/main')
+def main_route():
+    return render_template('main_page.html')
+
 if __name__ == '__main__':
     app.run()
