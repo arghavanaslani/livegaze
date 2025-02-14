@@ -10,19 +10,19 @@
 
     <title>LiveGaze</title>
     <style>
-        .board-card{
+        .board-card {
             height: 50vh;
         }
 
         .board-img {
-            height: 80%;
+            height: 90%;
             width: 100%;
             padding: 1px;
             object-fit: contain;
         }
 
-        .board-card-body{
-            height: 18%;
+        .board-card-body {
+            height: 8%;
             padding-top: 1%;
             padding-bottom: 0;
         }
@@ -47,77 +47,36 @@
         </div>
         <div class="col-md-2 d-flex align-items-center">
             <div class="text-end w-100">
-                <p > Hello! User </p>
+                <p> Hello! User </p>
             </div>
         </div>
     </div>
 
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-6">
-                <div class="card board-card mb-3">
-                    <img class="card-img-top img-fluid board-img"  src="../static/artworks/Goos.jpg" alt="Card image cap">
-                    <hr class="hr" style="margin-top:0; margin-bottom: 2%" >
-                    <div class="card-body board-card-body container-fluid">
-                        <div class="row">
-                            <div class="col-md-8 d-flex align-items-center">
-                                <h5 class="card-title">Dante</h5>
-                            </div>
-                            <div class="col-md-4">
-                                <button class="btn btn-link">Edit</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% for board in boards %}
 
-            <div class="col-md-6">
-                <div class="card board-card mb-3">
-                    <img class="card-img-top img-fluid board-img"  src="../static/artworks/hokusai.jpg" alt="Card image cap">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-8 d-flex align-items-center">
-                                <h5 class="card-title">Dante</h5>
-                            </div>
-                            <div class="col-md-4">
-                                <button class="btn btn-link">Edit</button>
+                <div class="col-md-6">
+                    <div class="card board-card mb-3">
+                        <a class="card-img-top board-img" href="artworks/simple_js/{{ board.id }}" target="_blank">
+                            <img class="board-img" href="artworks/simple_js/{{ board.id }}" src="{{ board.image_path }}" alt="Card image cap"
+                                style="height: 100%">
+                        </a>
+                        <hr class="hr" style="margin-top:0; margin-bottom: 0%">
+                        <div class="card-body board-card-body container-fluid d-flex align-items-center">
+                            <div class="row w-100">
+                                <div class="col-md-8 d-flex align-items-center">
+                                    <h5 class="card-title"> <a href="artworks/simple_js/{{ board.id }}" class="link-body-emphasis link-underline-opacity-0" >{{ board.name }}</a></h5>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <a href="/artworks/{{ board.id }}">Edit</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-6">
-                <div class="card board-card mb-3">
-                    <img class="card-img-top img-fluid board-img"  src="../static/artworks/MarsAndVenus.png" alt="Card image cap">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-8 d-flex align-items-center">
-                                <h5 class="card-title">Dante</h5>
-                            </div>
-                            <div class="col-md-4">
-                                <button class="btn btn-link">Edit</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card board-card mb-3">
-                    <img class="card-img-top img-fluid board-img"  src="../static/artworks/Dutch_Proverbs.jpg" alt="Card image cap">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-8 d-flex align-items-center">
-                                <h5 class="card-title">Dante</h5>
-                            </div>
-                            <div class="col-md-4">
-                                <button class="btn btn-link">Edit</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

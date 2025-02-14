@@ -15,6 +15,7 @@ import signal
 from artworks.views import artwork_blueprint
 from settings.views import settings_blueprint
 from waldo.views import waldo_blueprint
+from main_page.views import main_page_blueprint
 from flask_bootstrap import Bootstrap
 from signal_handlers import signal_int_handler
 from flask import Flask
@@ -39,15 +40,16 @@ socket_io.init_app(app)
 app.register_blueprint(artwork_blueprint, url_prefix="/artworks")
 app.register_blueprint(settings_blueprint, url_prefix="/settings")
 app.register_blueprint(waldo_blueprint, url_prefix="/waldo")
+app.register_blueprint(main_page_blueprint)
 bootstrap = Bootstrap(app)
 gaze_manager.gaze_manager.update_thread.app = app
 
 signal.signal(signal.SIGINT, signal_int_handler)
 
 
-@app.route('/', methods=["GET"])
-def index():
-    return render_template('demo.html', camera_ids=2)
+# @app.route('/', methods=["GET"])
+# def index():
+#     return render_template('demo.html', camera_ids=2)
 
 
 # forms
@@ -91,10 +93,6 @@ def torch():
 def torch_new(artwork_id):
     return render_template('torch_new.html', camera_ids=1,
                            artwork_id=int(artwork_id))
-
-@app.route('/main')
-def main_route():
-    return render_template('main_page.html')
 
 if __name__ == '__main__':
     app.run()
