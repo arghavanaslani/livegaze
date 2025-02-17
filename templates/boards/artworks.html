@@ -1,4 +1,4 @@
-{% extends 'artworks/base.html' %}
+{% extends 'boards/base.html' %}
 
 {% block app_context %}
     <div class="row">
@@ -28,15 +28,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for artwork in artworks %}
+                    {% for board in boards %}
                          <tr>
-                            <td>{{ artwork.id }}</td>
-                            <td>{{ artwork.name }}</td>
-                            <td>{{ artwork.bio }}</td>
-                            <td><img src="../{{ artwork.image_path }}" alt="image of {{ artwork.name }}"></td>
+                            <td>{{ board.id }}</td>
+                            <td>{{ board.name }}</td>
+                            <td>{{ board.bio }}</td>
+                            <td><img src="../{{ board.image_path }}" alt="image of {{ board.name }}"></td>
                             <td>
-                                <a href="{{ url_for("transformed", artwork_id='{}'.format(artwork.id)) }}">View Simple</a> <br>
-                                <a href="{{ url_for("torch", artwork_id='{}'.format(artwork.id))}}">View Torchlight</a>
+                                <a href="{{ url_for("transformed", board_id='{}'.format(board.id)) }}">View Simple</a> <br>
+                                <a href="{{ url_for("torch", board_id='{}'.format(board.id))}}">View Torchlight</a>
                             </td>
                         </tr>
                     {% endfor %}

@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 from flask import current_app
-from artworks.models import Artwork
+from boards.models import Board
 from gaze_manager import gaze_manager
 from settings.models import Settings
 from gaze_manager.models import GazeData
@@ -119,7 +119,7 @@ pointer_rel_size = 0.5
 rolling_average_window = 10
 
 
-def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: Artwork, settings: Settings):
+def gen_artwork_img(mode: str, screen_height: int, screen_width: int, artwork: Board, settings: Settings):
     eye_tracker_pointer = dict()
 
     gaze_dict: dict[int, dict[str, GazeData]] = gaze_manager.show_data

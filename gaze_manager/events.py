@@ -17,6 +17,7 @@ def register_events(socket_io):
         # TODO: change variables to match the class
         data['timestamp'] = datetime.utcnow().timestamp()
         gaze_data = GazeData(**data)
+        print(data)
         # gaze_data: GazeData = json.loads(data, object_hook=lambda d: GazeData(**d))
         if not gaze_manager.update_thread.is_alive():
             gaze_manager.update_thread.start()

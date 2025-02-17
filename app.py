@@ -12,7 +12,7 @@ from extensions import db_config
 import os
 
 import signal
-from artworks.views import artwork_blueprint
+from boards.views import board_blueprint
 from settings.views import settings_blueprint
 from waldo.views import waldo_blueprint
 from main_page.views import main_page_blueprint
@@ -37,7 +37,7 @@ db_config.init_db(app)
 register_events(socket_io)
 register_waldo_events(socket_io)
 socket_io.init_app(app)
-app.register_blueprint(artwork_blueprint, url_prefix="/artworks")
+app.register_blueprint(board_blueprint, url_prefix="/boards")
 app.register_blueprint(settings_blueprint, url_prefix="/settings")
 app.register_blueprint(waldo_blueprint, url_prefix="/waldo")
 app.register_blueprint(main_page_blueprint)
@@ -74,25 +74,25 @@ def transformed1():
     return render_template('transformed1.html', camera_ids=1)
 
 
-@app.route('/transformed/<string:artwork_id>')
-def transformed(artwork_id):
-    return render_template('transformed.html', artwork_id=int(artwork_id), mode='simple')
+@app.route('/transformed/<string:board_id>')
+def transformed(board_id):
+    return render_template('transformed.html', board_id=int(board_id), mode='simple')
 
-@app.route('/transformed/<string:mode>/<string:artwork_id>')
-def transformer_mode(mode, artwork_id):
+@app.route('/transformed/<string:mode>/<string:board_id>')
+def transformer_mode(mode, board_id):
     if mode not in ['simple', 'torch', 'waldo']:
         mode = 'simple'
-    return render_template('transformed.html', artwork_id=int(artwork_id), mode=mode)
+    return render_template('transformed.html', board_id=int(board_id), mode=mode)
 
 @app.route('/torch')
 def torch():
     return render_template('torch.html', camera_ids=1)
 
 
-@app.route('/torch_new/<string:artwork_id>')
-def torch_new(artwork_id):
+@app.route('/torch_new/<string:board_id>')
+def torch_new(board_id):
     return render_template('torch_new.html', camera_ids=1,
-                           artwork_id=int(artwork_id))
+                           board_id=int(board_id))
 
 if __name__ == '__main__':
     app.run()

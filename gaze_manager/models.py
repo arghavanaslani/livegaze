@@ -24,7 +24,7 @@ class GazeDatabaseModel(Base):
     __tablename__ = "GazeData"
     id = Column(Integer, primary_key=True)
     added_date = Column(DateTime, server_default=func.now())
-    artwork_id = Column(ForeignKey('Artwork.id'))
+    board_id = Column(ForeignKey('Board.id'))
     gaze_type = Column(Enum(GazeType))
     eyetracker_id = Column(String, nullable=False)
     gaze_position_x = Column(Float, nullable=False)
@@ -34,7 +34,7 @@ class GazeDatabaseModel(Base):
     def __init__(self, gaze_data: GazeData, **kw):
         super().__init__(**kw)
         self.added_date = datetime.fromtimestamp(gaze_data.timestamp)
-        self.artwork_id = gaze_data.stim_id
+        self.board_id = gaze_data.stim_id
         self.gaze_type = GazeType.simple
         self.eyetracker_id = gaze_data.camera_id
         self.gaze_position_x = gaze_data.pos_x

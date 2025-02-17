@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, current_app, redirect, url_for, flash, Response
 from settings.models import Settings
-from artworks.models import Artwork
-from artworks.utils import gen_artwork_img
+from boards.models import Board
+from boards.utils import gen_artwork_img
 from extensions.db_config import db
 
 
@@ -18,6 +18,6 @@ def get_waldo_page(waldo_id):
 def get_waldo(waldo_id, screen_height, screen_width):
     waldo_path = f"static/waldo/waldo_{waldo_id}.jpg"
     settings = db.session.query(Settings).first()
-    artwork = db.session.query(Artwork).get(int(waldo_id) + WALDO_ID_BEGIN)
+    artwork = db.session.query(Board).get(int(waldo_id) + WALDO_ID_BEGIN)
     return Response(gen_artwork_img('waldo', int(screen_width), int(screen_height), artwork, settings),
                     mimetype='multipart/x-mixed-replace; boundary=frame')

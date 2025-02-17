@@ -14,7 +14,7 @@ def init_db(app):
     redis_client.init_app(app)
     #remove the set from redis
     redis_client.delete(TRACKERS_SET)
-    from artworks.models import Artwork
+    from boards.models import Board
     from gaze_manager.models import GazeDatabaseModel
     with app.app_context():
         Base.metadata.create_all(db.engine)

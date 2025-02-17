@@ -8,7 +8,7 @@
 <body>
 
     <div class="container">
-{#      <img src="{{ url_for('mapped_gaze_feed', artwork_id='{}'.format(artwork_id))}}" alt="Mapped View" class="image-world" width="30px" height="15px">#}
+{#      <img src="{{ url_for('mapped_gaze_feed', board_id='{}'.format(board_id))}}" alt="Mapped View" class="image-world" width="30px" height="15px">#}
         <img id="artworkImg" alt="Image">
     </div>
 
@@ -22,7 +22,7 @@
             var img = document.getElementById('artworkImg');
             img.style.height = window.innerHeight + 'px';
             img.style.width = window.innerWidth + 'px';
-            img.src = '../../artworks/{{mode}}/{{ artwork_id }}/'+ screenWidth +'/' + screenHeight
+            img.src = '../../boards/{{mode}}/{{ board_id }}/'+ screenWidth +'/' + screenHeight
         };
     </script>
 </body>

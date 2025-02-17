@@ -12,8 +12,8 @@
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
     <h2>Artworks</h2>
     <ul>
-        <li><a href="{{ url_for('artworks.get_artworks')}}">View All</a></li>
-        <li><a href="{{ url_for('artworks.add_artwork')}}">Add Artwork</a></li>
+        <li><a href="{{ url_for('boards.get_artworks')}}">View All</a></li>
+        <li><a href="{{ url_for('boards.add_artwork')}}">Add Artwork</a></li>
     </ul>
     <h2>Add</h2>
     <ul>
@@ -23,13 +23,13 @@
     </ul>
     <h2>Effects</h2>
     <ul>
-        <li><a href="{{ url_for("transformed", artwork_id='{}'.format(0)) }}" target="_blank">Simple Transformed</a></li>
-        <li><a href="{{ url_for("torch_new" , artwork_id='{}'.format(0)) }}" target="_blank">Accumulative Torchlight Effect</a></li>
+        <li><a href="{{ url_for("transformed", board_id='{}'.format(0)) }}" target="_blank">Simple Transformed</a></li>
+        <li><a href="{{ url_for("torch_new" , board_id='{}'.format(0)) }}" target="_blank">Accumulative Torchlight Effect</a></li>
     </ul>
     <h2> Misc</h2>
     <ul>
         <li><a href="{{ url_for("settings.get_settings")}}">Settings</a></li>
-        <li><a href="{{ url_for("tag_test_feed", artwork_id='{}'.format(0)) }}" target="_blank">Tag Test</a></li>
+        <li><a href="{{ url_for("tag_test_feed", board_id='{}'.format(0)) }}" target="_blank">Tag Test</a></li>
     </ul>
     <a href="#">Dashboard</a>
     <a href="#">Help</a>
@@ -89,7 +89,7 @@
 
     <script>
 
-      // var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', camera_id='{}'.format(camera_id), artwork_id ='{}'.format(camera_id)) }}")
+      // var eventSource = new EventSource("{{ url_for('mapped_gaze_feed', camera_id='{}'.format(camera_id), board_id ='{}'.format(camera_id)) }}")
 
       // eventSource.addEventListener("mapped_gaze", function(e) {
 

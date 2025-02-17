@@ -6,7 +6,7 @@
     <title>artworkTest</title>
     <script>
         const arucoId = {{ aruco_id }}
-        const boardId = {{ board_id }}
+        {#const boardId = {{ board_id }}#}
         const selectedMarkerId = {{ selected_label_id }};
         const pointerSize = {{ pointer_size }};
     </script>
@@ -87,7 +87,7 @@
 <div id="arucoTag3" class="tag upper-right"></div>
 
 <div id="bg">
-    <img id="bgImage"  class="background" alt="backgroundImage" src="../../{{ artwork_url }}">
+    <img id="bgImage"  class="background" alt="backgroundImage" src="../../{{ board_url }}">
 </div>
 <div id="markerParent" class="marker_parent">
 
