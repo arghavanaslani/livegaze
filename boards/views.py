@@ -55,9 +55,10 @@ def get_torch_feed(board_id, screen_height, screen_width):
 @board_blueprint.route('/simple_js/<string:board_id>')
 def get_simple_js(board_id):
     board = db.session.query(Board).get(board_id)
+    stimuli_paths = [stimulus.stimulus.file_path for stimulus in board.stimuli]
     settings = db.session.query(Settings).first()
     context = {
-        'board_url': board.image_path,
+        'stimuli_paths': stimuli_paths,
         'board_id': board_id,
         'pointer_size': settings.pointer_size,
         'aruco_id' : board.tag_id,

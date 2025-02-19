@@ -59,8 +59,10 @@
                 <div class="col-md-6">
                     <div class="card board-card mb-3">
                         <a class="card-img-top board-img" href="artworks/simple_js/{{ board.id }}" target="_blank">
-                            <img class="board-img" href="artworks/simple_js/{{ board.id }}" src="{{ board.image_path }}" alt="Card image cap"
+                            {% for stimuli_path in board.stimuli_paths %}
+                            <img class="board-img" src="{{ stimuli_path }}" alt="Card image cap"
                                 style="height: 100%">
+                            {% endfor %}
                         </a>
                         <hr class="hr" style="margin-top:0; margin-bottom: 0%">
                         <div class="card-body board-card-body container-fluid d-flex align-items-center">

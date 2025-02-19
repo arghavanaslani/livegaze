@@ -87,7 +87,9 @@
 <div id="arucoTag3" class="tag upper-right"></div>
 
 <div id="bg">
-    <img id="bgImage"  class="background" alt="backgroundImage" src="../../{{ board_url }}">
+    {% for stimulus_path in stimuli_paths %}
+        <img id="bgImage"  class="background" alt="backgroundImage" src="../../{{ stimulus_path }}">
+    {% endfor %}
 </div>
 <div id="markerParent" class="marker_parent">
 
