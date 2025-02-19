@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, current_app, redirect, url_for, fl
 
 from boards.utils import gen_artwork_img
 from boards.forms import ArtworkForm
-from boards.models import Board
+from boards.models import Board, Stimulus
 from settings.models import Settings
 from werkzeug.utils import secure_filename
 from extensions.db_config import db
@@ -21,20 +21,23 @@ def get_artworks():
 
 @board_blueprint.route('/new', methods=['GET', 'POST'])
 def add_artwork():
-    form = ArtworkForm()
-    if form.validate_on_submit():
-        artwork = Board(name=form.name.data, bio=form.bio.data)
-        uploaded_image = form.image.data
-        image_name = secure_filename(uploaded_image.filename)
-        image_path = os.path.join(current_app.config['ARTWORK_UPLOAD_PATH'], image_name)
-        image_path = get_unique_filename(image_path)
-        uploaded_image.save(image_path)
-        artwork.image_path = image_path
-        db.session.add(artwork)
-        db.session.commit()
-        flash('Artwork has been successfully added')
-        return redirect(url_for('boards.add_artwork'))
-    return render_template('boards/add_artworks.html', form=form, title='Add Artwork')
+    stimuli = db.session.query(Stimulus).all()
+
+    return render_template('boards/create_board.html', stimuli=stimuli)
+    # form = ArtworkForm()
+    # if form.validate_on_submit():
+    #     artwork = Board(name=form.name.data, bio=form.bio.data)
+    #     uploaded_image = form.image.data
+    #     image_name = secure_filename(uploaded_image.filename)
+    #     image_path = os.path.join(current_app.config['ARTWORK_UPLOAD_PATH'], image_name)
+    #     image_path = get_unique_filename(image_path)
+    #     uploaded_image.save(image_path)
+    #     artwork.image_path = image_path
+    #     db.session.add(artwork)
+    #     db.session.commit()
+    #     flash('Artwork has been successfully added')
+    #     return redirect(url_for('boards.add_artwork'))
+    # return render_template('boards/add_artworks.html', form=form, title='Add Artwork')
 
 
 @board_blueprint.route('/simple/<string:board_id>/<string:screen_height>/<string:screen_width>')

@@ -27,7 +27,7 @@ class Stimulus(Base):
     __tablename__ = "Stimulus"
     id = Column(Integer, primary_key=True)
     name = Column(String(256))
-    data_added = Column(DateTime, default=func.now())
+    date_added = Column(DateTime, default=func.now())
     file_path = Column(String(256))
     stim_type = Column(Enum(StimType))
     boards = relationship("StimulusBoard", back_populates="stimulus")
