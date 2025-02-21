@@ -40,7 +40,9 @@
         <div class="col-md-2">
         </div>
         <div class="col-md-2">
-            <button class="btn btn-secondary w-100">Create Board</button>
+            <a href="boards/new">
+                <button class="btn btn-secondary w-100">Create Board</button>
+            </a>
         </div>
         <div class="col-md-2">
             <button class="btn btn-secondary w-100">Eye Trackers</button>
@@ -58,20 +60,22 @@
 
                 <div class="col-md-6">
                     <div class="card board-card mb-3">
-                        <a class="card-img-top board-img" href="artworks/simple_js/{{ board.id }}" target="_blank">
+                        <a class="card-img-top board-img" href="boards/simple_js/{{ board.id }}" target="_blank">
                             {% for stimuli_path in board.stimuli_paths %}
-                            <img class="board-img" src="{{ stimuli_path }}" alt="Card image cap"
-                                style="height: 100%">
+                                <img class="board-img" src="{{ stimuli_path }}" alt="Card image cap"
+                                     style="height: 100%">
                             {% endfor %}
                         </a>
                         <hr class="hr" style="margin-top:0; margin-bottom: 0%">
                         <div class="card-body board-card-body container-fluid d-flex align-items-center">
                             <div class="row w-100">
                                 <div class="col-md-8 d-flex align-items-center">
-                                    <h5 class="card-title"> <a href="artworks/simple_js/{{ board.id }}" class="link-body-emphasis link-underline-opacity-0" >{{ board.name }}</a></h5>
+                                    <h5 class="card-title"><a href="boards/simple_js/{{ board.id }}"
+                                                              class="link-body-emphasis link-underline-opacity-0">{{ board.name }}</a>
+                                    </h5>
                                 </div>
                                 <div class="col-md-4 text-center">
-                                    <a href="/artworks/{{ board.id }}">Edit</a>
+                                    <a href="/boards/{{ board.id }}">Edit</a>
                                 </div>
                             </div>
                         </div>
