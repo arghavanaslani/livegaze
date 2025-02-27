@@ -25,6 +25,11 @@
             height: 60vh;
         }
 
+        .scroll_container {
+            max-height: 100%;
+            overflow-y: auto;
+        }
+
         .stim-card {
             height: 100%;
         }
@@ -87,7 +92,7 @@
     <div class="row">
         {#  Stimuli Div#}
         <div class="col-md-4 border border-5 rounded-3 stimuli-border">
-            <div class="row" id="stimuli_parent">
+            <div class="row scroll_container" id="stimuli_parent">
                 {% for stimulus in stimuli %}
                     <div class="col-md-4" id="stimulus{{ stimulus.id }}">
                         <div class="card stim-card justify-content-center border-0">
