@@ -10,3 +10,7 @@ class ArtworkForm(FlaskForm):
     image = FileField('Image', validators=[FileRequired(), FileAllowed(['jpg', 'png'],
                                                                        'Only use images with extension jpg and png.')])
     submit = SubmitField('Add Artwork')
+
+class StimForm(FlaskForm):
+    stim_file = FileField('Image', validators=[FileRequired(), FileAllowed(['jpg', 'png'],
+                                                                       'Only use images with extension jpg and png.')])

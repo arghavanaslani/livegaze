@@ -8,6 +8,7 @@
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script>
         var arucoId = 0;
+        var csrf_token = "{{ csrf_token() }}";
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/aruco/cv.js') }}"></script>
@@ -55,11 +56,19 @@
             right: 0;
         }
 
-        .tag-parent{
+        .tag-parent {
             position: relative;
-            width:100%;
-            height:100%;
+            width: 100%;
+            height: 100%;
         }
+
+        .stim-on-board {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+        }
+
     </style>
 </head>
 <body>
@@ -78,26 +87,55 @@
     <div class="row">
         {#  Stimuli Div#}
         <div class="col-md-4 border border-5 rounded-3 stimuli-border">
-            <div class="row">
+            <div class="row" id="stimuli_parent">
                 {% for stimulus in stimuli %}
-                    <div class="col-md-4 ">
+                    <div class="col-md-4" id="stimulus{{ stimulus.id }}">
                         <div class="card stim-card justify-content-center border-0">
-                            <img src="../{{ stimulus.file_path }}" class="card-img" alt="...">
+                            <img src="../{{ stimulus.file_path }}" class="card-img draggable-img" alt="..."
+                                 id="stimulusImg{{ stimulus.id }}" draggable="true"
+                                 style="cursor: grab;">
                         </div>
                     </div>
                 {% endfor %}
+                <div class="col-md-4" id="uploadCell">
+                    <div class="card stim-card justify-content-center border-0">
+                        <input type="file" id="fileInput" onchange="upload_stim()" style="display: none">
+                        <button class="btn btn-secondary" id="uploadButton" style="height: 100%" onclick="document.getElementById('fileInput').click()">
+                            <img src="../static/icons/upload.png" alt="Upload" style="width: 50%">
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         {#  Board Div#}
-        <div class="col-md-8 border border-5 rounded-0 board-border" style="padding: 0">
-            <div class="tag-parent" style="padding: 0">
-                <div id="arucoTag0" class="tag lower-right"></div>
-                <div id="arucoTag1" class="tag lower-left"></div>
-                <div id="arucoTag2" class="tag upper-left"></div>
-                <div id="arucoTag3" class="tag upper-right"></div>
+        <div class="col-md-7 ms-5">
+            <div class="row">
+                <div class="col-md-12 border border-5 rounded-0 board-border" style="padding: 0" ondrop="drop(event)"
+                     ondragover="allowDrop(event)">
+                    <div class="tag-parent" style="padding: 0" id="board_parent">
+                        <div id="arucoTag0" class="tag lower-right"></div>
+                        <div id="arucoTag1" class="tag lower-left"></div>
+                        <div id="arucoTag2" class="tag upper-left"></div>
+                        <div id="arucoTag3" class="tag upper-right"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Board Name" aria-label="Board Name"
+                               id="board_name_input">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-secondary" id="save_board" onclick="save_board()">Save Board</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/create_board/create_board.js') }}"></script>
 </body>
 </html>

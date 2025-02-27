@@ -1,4 +1,4 @@
-ARTWORK_UPLOAD_PATH = 'static/artworks/'
+STIMULI_UPLOAD_PATH = 'static/artworks/'
 DB_TYPE = 'postgresql+psycopg2'
 DB_NAME = 'livegaze'
 DB_HOST = 'localhost'

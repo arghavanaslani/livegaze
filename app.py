@@ -19,11 +19,12 @@ from main_page.views import main_page_blueprint
 from flask_bootstrap import Bootstrap
 from signal_handlers import signal_int_handler
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 
 import random
 
 thread = None
-
+csrf = CSRFProtect()
 app = Flask(__name__)
 if os.path.exists('config.py'):
     app.config.from_pyfile("config.py")
@@ -31,7 +32,7 @@ else:
     app.config.from_pyfile("config_example.py")
 app.app_context().push()
 db_config.init_db(app)
-
+csrf.init_app(app)
 
 # register socket io events
 register_events(socket_io)
