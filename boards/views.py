@@ -4,12 +4,14 @@ from werkzeug.datastructures import CombinedMultiDict
 
 from boards.utils import gen_artwork_img
 from boards.forms import ArtworkForm, StimForm
-from boards.models import Board, Stimulus, StimulusBoard
+from boards.models import Board, Stimulus, StimulusBoard, StimType
 from settings.models import Settings
 from werkzeug.utils import secure_filename
 from extensions.db_config import db
 import json
 import os
+import re
+import requests
 from boards.utils import get_unique_filename
 
 board_blueprint = Blueprint('boards', __name__)
@@ -25,7 +27,7 @@ def get_artworks():
 @board_blueprint.route('/new', methods=['GET', 'POST'])
 def add_artwork():
     stimuli = db.session.query(Stimulus).all()
-
+    print(stimuli)
     return render_template('boards/create_board.html', stimuli=stimuli)
     # form = ArtworkForm()
     # if form.validate_on_submit():
@@ -75,6 +77,25 @@ def add_stim():
         print(stim.id, stim.file_path)
         return Response(json.dumps({'stim_id': stim.id, 'stim_path': stim.file_path}),mimetype='application/json',status=200)
     return Response(json.dumps({'error': 'Invalid file'}), mimetype='application/json',status=400)
+
+@board_blueprint.route('/submit_youtube', methods=['POST'])
+def submit_youtube():
+    video_id = request.form.get('video_id')
+    # check if YouTube video id is valid
+    response = requests.get(f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&key={current_app.config["YOUTUBE_API_KEY"]}&part=id')
+    if response.status_code != 200:
+        return Response(json.dumps({'error': 'Invalid YouTube video id'}), mimetype='application/json', status=400)
+    data = response.json()
+    if not data['items']:
+        return Response(json.dumps({'error': 'Invalid YouTube video id'}), mimetype='application/json', status=400)
+    if data['pageInfo']['totalResults'] == 0:
+        return Response(json.dumps({'error': 'Invalid YouTube video id'}), mimetype='application/json', status=400)
+
+    stim = Stimulus(stim_type=StimType.YOUTUBE, file_path=video_id)
+    db.session.add(stim)
+    db.session.commit()
+
+    return Response(json.dumps({'stim_path': video_id, 'stim_id': stim.id}), mimetype='application/json', status=200)
 
 
 @board_blueprint.route('/simple/<string:board_id>/<string:screen_height>/<string:screen_width>')

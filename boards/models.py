@@ -18,10 +18,11 @@ class Board(Base):
     # gaze_datas: Mapped[List["GazeData"]] = relationship(back_populates='artwork')
 
 
-
 class StimType(enum.Enum):
     IMAGE = 0
     VIDEO = 1
+    YOUTUBE = 2
+
 
 class Stimulus(Base):
     __tablename__ = "Stimulus"

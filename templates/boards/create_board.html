@@ -94,19 +94,39 @@
         <div class="col-md-4 border border-5 rounded-3 stimuli-border">
             <div class="row scroll_container" id="stimuli_parent">
                 {% for stimulus in stimuli %}
-                    <div class="col-md-4" id="stimulus{{ stimulus.id }}">
+                    <div class="col-md-4" id="stimulus{{ stimulus.id }}" style="margin-top: 1vh">
                         <div class="card stim-card justify-content-center border-0">
-                            <img src="../{{ stimulus.file_path }}" class="card-img draggable-img" alt="..."
-                                 id="stimulusImg{{ stimulus.id }}" draggable="true"
-                                 style="cursor: grab;">
+                            {% if stimulus.stim_type.value == 0 %}
+                                <img src="../{{ stimulus.file_path }}" class="card-img draggable-img" alt="..."
+                                     id="stimulusImg{{ stimulus.id }}" draggable="true" data-stimtype="0" data-src="{{ stimulus.file_path }}"
+                                     style="cursor: grab;">
+                            {% elif stimulus.stim_type.value == 2 %}
+                                <img src="https://img.youtube.com/vi/{{ stimulus.file_path }}/hqdefault.jpg"
+                                     class="card-img draggable-img" data-stimtype="2" data-src="{{ stimulus.file_path }}"
+                                     alt="..." id="stimulusImg{{ stimulus.id }}" draggable="true"
+                                     style="cursor: grab;">
+                                {# add a youtube icon at the top left of its thumbnail #}
+                                <img src="../static/icons/youtube.png" class="card-img"
+                                     style="width: 10%; position: absolute; top: 5%; left: 5%;">
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
-                <div class="col-md-4" id="uploadCell">
+                <div class="col-md-4" id="uploadCell" style="margin-top: 1vh">
                     <div class="card stim-card justify-content-center border-0">
                         <input type="file" id="fileInput" onchange="upload_stim()" style="display: none">
-                        <button class="btn btn-secondary" id="uploadButton" style="height: 100%" onclick="document.getElementById('fileInput').click()">
+                        <button class="btn btn-secondary card-image" id="uploadButton" style="height: 100%"
+                                onclick="document.getElementById('fileInput').click()">
                             <img src="../static/icons/upload.png" alt="Upload" style="width: 50%">
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="youtubeCell" style="margin-top: 1vh">
+                    <div class="card stim-card justify-content-center border-0">
+                        <button class="btn btn-secondary card-image" id="uploadButton" style="height: 100%" data-bs-toggle="modal"
+                                data-bs-target="#youtubeModal">
+                            <img src="../static/icons/youtube.png" alt="Upload" style="width: 50%">
                         </button>
                     </div>
                 </div>
@@ -136,6 +156,29 @@
                 <div class="col-md-4">
                     <button class="btn btn-secondary" id="save_board" onclick="save_board()">Save Board</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="youtubeModal" tabindex="-1" aria-labelledby="youtubeModalTag" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="youtubeModalTag">Add Youtube Video</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="youtube_form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">https://www.youtube.com/watch?v=</span>
+                        <input type="text" class="form-control" placeholder="Video ID" aria-label="Video ID"
+                               aria-describedby="basic-addon1" id="youtube_video_id">
+                    </div>
+                    <div id="error-message" class="text-danger mt-2"></div> <!-- Error message container -->
+                    <button type="submit" class="btn btn-success mt-3">Submit</button>
+                </form>
             </div>
         </div>
     </div>

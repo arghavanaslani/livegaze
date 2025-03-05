@@ -4,13 +4,19 @@ function drop(event) {
     const jsonString = event.dataTransfer.getData("application/json");
     if (jsonString) {
         const data = JSON.parse(jsonString);
-        if (data && data.type === "stimulus") {
+        if (data && data.type === "stimulus" && data.stimtype === "0") {
             const draggedElement = document.getElementById(data.id);
             const src = draggedElement.src;
             const newElement = document.createElement("img");
             newElement.src = src;
             newElement.className = "stim-on-board";
             // extract id of the stimulus from element id : stimulusImg<id>
+            newElement.dataset.id = data.id.split("stimulusImg")[1];
+            parent.appendChild(newElement);
+        } else if (data && data.type === "stimulus" && data.stimtype === "2") {
+            const newElement = document.createElement("iframe");
+            newElement.src = "https://www.youtube.com/embed/" + data.src + "?autoplay=1&mute=1&showinfo=0";
+            newElement.className = "stim-on-board";
             newElement.dataset.id = data.id.split("stimulusImg")[1];
             parent.appendChild(newElement);
         }
@@ -24,16 +30,17 @@ function allowDrop(event) {
 
 function add_draggable_functions(child) {
     child.addEventListener("dragstart", function (event) {
-            var sendData = {"type": "stimulus", "id": event.target.id};
-            event.dataTransfer.setData("application/json", JSON.stringify(sendData));
-            event.dataTransfer.setDragImage(event.target, 0, 0);
-            event.target.style.opacity = "0.5";
-            // event.dataTransfer.effectAllowed = "copy"; // Enables the green plus sign
-        });
+        var sendData = {"type": "stimulus", "id": event.target.id, "stimtype": event.target.dataset.stimtype,
+        "src": event.target.dataset.src};
+        event.dataTransfer.setData("application/json", JSON.stringify(sendData));
+        event.dataTransfer.setDragImage(event.target, 0, 0);
+        event.target.style.opacity = "0.5";
+        // event.dataTransfer.effectAllowed = "copy"; // Enables the green plus sign
+    });
 
-        child.addEventListener("dragend", (event) => {
-            event.target.style.opacity = "1";
-        });
+    child.addEventListener("dragend", (event) => {
+        event.target.style.opacity = "1";
+    });
 }
 
 function initialize_drag() {
@@ -52,12 +59,71 @@ function initialize_drag() {
     // });
 
     $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
+        beforeSend: function (xhr, settings) {
             if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
                 xhr.setRequestHeader("X-CSRFToken", csrf_token);
             }
         }
     });
+}
+
+function prepare_submit_youtube() {
+    $("#youtube_form").submit(function (event) {
+        event.preventDefault();
+
+        let videoId = $("#youtube_video_id").val();
+
+        $.ajax({
+            type: "POST",
+            url: "submit_youtube",
+            data: {video_id: videoId},
+            success: function (response) {
+                console.log(response);
+                $("#youtubeModal").modal("hide");
+                $("#youtube_video_id").val("");
+                console.log(response.stim_id, response.stim_path, 'youtube');
+                // create a card from the video and append it to the list of cards
+                create_new_card(response.stim_id, response.stim_path, 'youtube');
+            },
+            error: function (response) {
+                $("#error-message").text("Error submitting video");
+            }
+        });
+    });
+}
+
+function create_new_card(stim_id, stim_path, stim_type) {
+    let newStim = document.createElement('div');
+    newStim.classList = ['col-md-4']
+    newStim.id = 'stimulus' + stim_id
+
+    let innerCard = document.createElement('div');
+    innerCard.classList = ['card', 'stim-card', 'justify-content-center', 'border-0']
+    newStim.appendChild(innerCard);
+
+    let cardImg = document.createElement('img');
+    cardImg.classList = 'card-img draggable-img'
+    cardImg.alt = '...'
+    cardImg.id = "stimulusImg" + stim_id
+    cardImg.draggable = this
+    console.log('stim_type', stim_type);
+    if (stim_type === 'image') {
+        console.log('image', stim_path);
+        cardImg.src = '../' + stim_path
+        cardImg.dataset.stimtype="0"
+    } else if (stim_type.includes('youtube')) {
+        console.log('youtube', stim_path);
+        cardImg.src = 'https://img.youtube.com/vi/' + stim_path + '/hqdefault.jpg'
+        cardImg.dataset.stimtype="2"
+    }
+    cardImg.style = "cursor: grab"
+    innerCard.appendChild(cardImg);
+
+    add_draggable_functions(cardImg);
+    let stim_parent = document.getElementById('stimuli_parent')
+    let last_child = stim_parent.lastChild
+    let second_last_child = last_child.previousSibling.previousSibling
+    stim_parent.insertBefore(newStim, second_last_child)
 }
 
 function upload_stim() {
@@ -78,28 +144,7 @@ function upload_stim() {
         processData: false,
         success: function (response) {
             console.log(response);
-            let newStim = document.createElement('div');
-            newStim.classList = ['col-md-4']
-            newStim.id = 'stimulus'+response.stim_id
-
-            let innerCard = document.createElement('div');
-            innerCard.classList = ['card', 'stim-card', 'justify-content-center', 'border-0']
-            newStim.appendChild(innerCard);
-
-            let cardImg = document.createElement('img');
-            cardImg.classList = 'card-img draggable-img'
-            cardImg.alt = '...'
-            cardImg.id="stimulusImg"+response.stim_id
-            cardImg.draggable = this
-            cardImg.src = '../'+response.stim_path
-            cardImg.style = "cursor: grab"
-            innerCard.appendChild(cardImg);
-
-            add_draggable_functions(cardImg);
-            let stim_parent = document.getElementById('stimuli_parent')
-            let last_child = stim_parent.lastChild
-            let second_last_child = last_child.previousSibling
-            stim_parent.insertBefore(newStim, second_last_child)
+            create_new_card(response.stim_id, response.stim_path, 'image');
         },
         error: function (response) {
             console.log(response);
@@ -116,12 +161,14 @@ function save_board() {
         return;
     }
     const stimuli = [];
+    const stimuli_types = [];
     for (let i = 0; i < parent.children.length; i++) {
         const child = parent.children[i];
         if (child.className !== "stim-on-board") {
             continue;
         }
         stimuli.push(child.dataset.id);
+        stimuli_types.push(child.dataset.stimtype);
     }
     if (stimuli.length === 0) {
         alert("Please add at least one stimulus to the board");
@@ -150,3 +197,4 @@ function save_board() {
 
 
 $(document).ready(initialize_drag)
+$(document).ready(prepare_submit_youtube);
