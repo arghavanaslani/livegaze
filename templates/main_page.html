@@ -26,6 +26,16 @@
             padding-top: 1%;
             padding-bottom: 0;
         }
+
+        .position-absolute {
+            position: absolute;
+        }
+
+        .position-relative {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -61,10 +71,12 @@
                 <div class="col-md-6">
                     <div class="card board-card mb-3">
                         <a class="card-img-top board-img" href="boards/simple_js/{{ board.id }}" target="_blank">
+                            <div class="position-relative">
                             {% for stimuli_path in board.stimuli_paths %}
-                                <img class="board-img" src="{{ stimuli_path }}" alt="Card image cap"
+                                <img class="board-img position-absolute" src="{{ stimuli_path }}" alt="Card image cap"
                                      style="height: 100%">
                             {% endfor %}
+                            </div>
                         </a>
                         <hr class="hr" style="margin-top:0; margin-bottom: 0%">
                         <div class="card-body board-card-body container-fluid d-flex align-items-center">
