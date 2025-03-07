@@ -72,10 +72,19 @@
                     <div class="card board-card mb-3">
                         <a class="card-img-top board-img" href="boards/simple_js/{{ board.id }}" target="_blank">
                             <div class="position-relative">
-                            {% for stimuli_path in board.stimuli_paths %}
-                                <img class="board-img position-absolute" src="{{ stimuli_path }}" alt="Card image cap"
-                                     style="height: 100%">
-                            {% endfor %}
+                                {% for stimulus in board.stimuli %}
+                                    {% if stimulus.stim_type.value == 0 %}
+                                        <img class="board-img position-absolute" src="{{ stimulus.file_path }}"
+                                             alt="Card image cap"
+                                             style="height: 100%">
+                                    {% elif stimulus.stim_type.value == 2 %}
+                                        <img class="board-img position-absolute"
+                                             src="https://img.youtube.com/vi/{{ stimulus.file_path }}/hqdefault.jpg"
+                                             alt="Card image cap" style="height: 100%">
+                                        <img src="../static/icons/youtube.png" class="card-img"
+                                             style="width: 10%; position: absolute; top: 5%; left: 5%;">
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                         </a>
                         <hr class="hr" style="margin-top:0; margin-bottom: 0%">

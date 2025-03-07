@@ -27,7 +27,6 @@ def get_artworks():
 @board_blueprint.route('/new', methods=['GET', 'POST'])
 def add_artwork():
     stimuli = db.session.query(Stimulus).all()
-    print(stimuli)
     return render_template('boards/create_board.html', stimuli=stimuli)
     # form = ArtworkForm()
     # if form.validate_on_submit():
@@ -74,7 +73,6 @@ def add_stim():
         stim = Stimulus(file_path=file_path)
         db.session.add(stim)
         db.session.commit()
-        print(stim.id, stim.file_path)
         return Response(json.dumps({'stim_id': stim.id, 'stim_path': stim.file_path}),mimetype='application/json',status=200)
     return Response(json.dumps({'error': 'Invalid file'}), mimetype='application/json',status=400)
 
@@ -117,17 +115,18 @@ def get_torch_feed(board_id, screen_height, screen_width):
 @board_blueprint.route('/simple_js/<string:board_id>')
 def get_simple_js(board_id):
     board = db.session.query(Board).get(board_id)
-    stimuli_paths = [stimulus.stimulus.file_path for stimulus in board.stimuli]
+    # stimuli_paths = [stimulus.stimulus.file_path for stimulus in board.stimuli]
+    # stimuli_types = [stimulus.stimulus.stim_type for stimulus in board.stimuli]
+    stimuli = [stimulus.stimulus for stimulus in board.stimuli]
     settings = db.session.query(Settings).first()
     context = {
-        'stimuli_paths': stimuli_paths,
+        'stimuli': stimuli,
         'board_id': board_id,
         'pointer_size': settings.pointer_size,
         'aruco_id': board.tag_id,
         'selected_label_id': 0,
     }
     return render_template('boards/simple_board.html', **context)
-
 
 @board_blueprint.route('/calibration')
 def get_calib():

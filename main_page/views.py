@@ -9,5 +9,5 @@ main_page_blueprint = Blueprint('main_page', __name__)
 @main_page_blueprint.route('/')
 def index():
     paintings = db.session.query(Board).all()
-    return render_template('main_page.html', boards=[ {"id": painting.id , "stimuli_paths": [stimulus.stimulus.file_path for stimulus in painting.stimuli],
+    return render_template('main_page.html', boards=[ {"id": painting.id , "stimuli": [stimulus.stimulus for stimulus in painting.stimuli],
                                                       "name": painting.name } for painting in paintings])
