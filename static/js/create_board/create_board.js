@@ -13,6 +13,19 @@ function drop(event) {
             // extract id of the stimulus from element id : stimulusImg<id>
             newElement.dataset.id = data.id.split("stimulusImg")[1];
             parent.appendChild(newElement);
+        } else if (data && data.type === "stimulus" && data.stimtype === "1") {
+            const newElement = document.createElement("video");
+            newElement.autoplay = true;
+            newElement.muted = true;
+            newElement.className = "stim-on-board";
+            newElement.dataset.id = data.id.split("stimulusImg")[1];
+            newElement.controls = true;
+
+            const source = document.createElement("source");
+            source.src = data.src;
+            source.type = "video/mp4";
+            newElement.appendChild(source);
+            parent.appendChild(newElement);
         } else if (data && data.type === "stimulus" && data.stimtype === "2") {
             const newElement = document.createElement("iframe");
             newElement.src = "https://www.youtube.com/embed/" + data.src + "?autoplay=1&mute=1&showinfo=0";
@@ -54,9 +67,6 @@ function initialize_drag() {
     }
 
     const board_parent = $("#board_parent");
-    // board_parent.on("dragover", function (event) {
-    //     // event.dataTransfer.dropEffect = "copy"; // Shows the green plus sign
-    // });
 
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
@@ -71,34 +81,31 @@ function prepare_submit_youtube() {
     $("#youtube_form").submit(function (event) {
         event.preventDefault();
 
-        let videoId = $("#youtube_video_id").val();
 
-        $.ajax({
-            type: "POST",
-            url: "submit_youtube",
-            data: {video_id: videoId},
-            success: function (response) {
-                console.log(response);
-                $("#youtubeModal").modal("hide");
-                $("#youtube_video_id").val("");
-                console.log(response.stim_id, response.stim_path, 'youtube');
-                // create a card from the video and append it to the list of cards
-                create_new_card(response.stim_id, response.stim_path, 'youtube');
-            },
-            error: function (response) {
-                $("#error-message").text("Error submitting video");
-            }
-        });
+    });
+
+    $("#upload-form").submit(function (event) {
+        event.preventDefault();
+
+        let filetype = $("#fileType").val();
+        if (filetype === "0") {
+            upload_image();
+        } else if (filetype === "1") {
+            upload_video();
+        } else if (filetype === "2") {
+            upload_youtube();
+        }
     });
 }
 
-function create_new_card(stim_id, stim_path, stim_type) {
+function create_new_card(stim_id, stim_path, thumbnail_path, stim_type) {
     let newStim = document.createElement('div');
-    newStim.classList = ['col-md-4']
+    newStim.classList = 'col-md-4'
+    newStim.style="margin-top: 1vh"
     newStim.id = 'stimulus' + stim_id
 
     let innerCard = document.createElement('div');
-    innerCard.classList = ['card', 'stim-card', 'justify-content-center', 'border-0']
+    innerCard.classList = 'card stim-card justify-content-center border-0'
     newStim.appendChild(innerCard);
 
     let cardImg = document.createElement('img');
@@ -111,23 +118,42 @@ function create_new_card(stim_id, stim_path, stim_type) {
         console.log('image', stim_path);
         cardImg.src = '../' + stim_path
         cardImg.dataset.stimtype="0"
+        cardImg.dataset.src = stim_path
     } else if (stim_type.includes('youtube')) {
         console.log('youtube', stim_path);
         cardImg.src = 'https://img.youtube.com/vi/' + stim_path + '/hqdefault.jpg'
         cardImg.dataset.stimtype="2"
+        cardImg.dataset.src = stim_path
+    } if (stim_type === 'video') {
+        console.log('video', stim_path);
+        // remove the extension from the path add jpg
+        cardImg.dataset.src = '../' + stim_path
+        cardImg.src = '../' + thumbnail_path
+        cardImg.dataset.stimtype="1"
     }
     cardImg.style = "cursor: grab"
     innerCard.appendChild(cardImg);
+    if (stim_type.includes('youtube')) {
+        let youtubeIcon = document.createElement('img');
+        youtubeIcon.src = '../static/icons/youtube.png';
+        youtubeIcon.classList = 'stim-vid-icon card-img';
+        innerCard.appendChild(youtubeIcon);
+    } else if (stim_type === 'video') {
+        let youtubeIcon = document.createElement('img');
+        youtubeIcon.src = '../static/icons/play.png';
+        youtubeIcon.classList = 'stim-vid-icon card-img';
+        innerCard.appendChild(youtubeIcon);
+    }
 
     add_draggable_functions(cardImg);
     let stim_parent = document.getElementById('stimuli_parent')
     let last_child = stim_parent.lastChild
-    let second_last_child = last_child.previousSibling.previousSibling
+    let second_last_child = last_child.previousSibling
     stim_parent.insertBefore(newStim, second_last_child)
 }
 
-function upload_stim() {
-    let fileInput = document.getElementById("fileInput");
+function upload_image() {
+    let fileInput = document.getElementById("imageFile");
     let file = fileInput.files[0];
     if (!file) {
         return;
@@ -144,13 +170,66 @@ function upload_stim() {
         processData: false,
         success: function (response) {
             console.log(response);
-            create_new_card(response.stim_id, response.stim_path, 'image');
+            $("#uploadModal").modal("hide");
+            create_new_card(response.stim_id, response.stim_path, response.stim_path,'image');
         },
         error: function (response) {
             console.log(response);
+            $("#error-message").text("Error submitting video");
             alert("Error uploading stimulus");
         }
     })
+}
+
+function upload_video() {
+    let fileInput = document.getElementById("videoFile");
+    let file = fileInput.files[0];
+    if (!file) {
+        return;
+    }
+    console.log(file);
+    let formData = new FormData();
+    formData.append("stim_file", file);
+
+    $.ajax({
+        url: '/boards/upload_stim',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            console.log(response);
+            $("#uploadModal").modal("hide");
+            create_new_card(response.stim_id, response.stim_path, response.thumbnail_path,'video');
+        },
+        error: function (response) {
+            console.log(response.responseText);
+            $("#error-message").text("Error submitting video");
+            alert("Error uploading stimulus");
+        }
+    })
+}
+
+function upload_youtube() {
+    let videoId = $("#youtube_video_id").val();
+
+    $.ajax({
+        type: "POST",
+        url: "submit_youtube",
+        data: {video_id: videoId},
+        success: function (response) {
+            console.log(response);
+            $("#uploadModal").modal("hide");
+            $("#youtube_video_id").val("");
+            console.log(response.stim_id, response.stim_path, 'youtube');
+            // create a card from the video and append it to the list of cards
+            create_new_card(response.stim_id, response.stim_path, response.stim_path, 'youtube');
+
+        },
+        error: function (response) {
+            $("#error-message").text("Error submitting video");
+        }
+    });
 }
 
 function save_board() {
@@ -193,6 +272,30 @@ function save_board() {
             alert("Error saving board");
         }
     });
+}
+
+function changeInputGroup() {
+    let selectedInputGroup = document.getElementById("fileType").value;
+    let imageInputGroup = document.getElementById("imageInputGroup");
+    let videoInputGroup = document.getElementById("videoInputGroup");
+    let youtubeInputGroup = document.getElementById("youtubeInputGroup");
+    if (selectedInputGroup=== "0") {
+        imageInputGroup.style.display = "";
+        videoInputGroup.style.display = "none";
+        youtubeInputGroup.style.display = "none";
+    } else if (selectedInputGroup === "1") {
+        imageInputGroup.style.display = "none";
+        videoInputGroup.style.display = "";
+        youtubeInputGroup.style.display = "none";
+    } else if (selectedInputGroup === "2") {
+        imageInputGroup.style.display = "none";
+        videoInputGroup.style.display = "none";
+        youtubeInputGroup.style.display = "";
+    } else {
+        imageInputGroup.style.display = "none";
+        videoInputGroup.style.display = "none";
+        youtubeInputGroup.style.display = "none";
+    }
 }
 
 

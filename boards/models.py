@@ -13,7 +13,7 @@ class Board(Base):
     name = Column(String(256))
     bio = Column(Text)
     tag_id = Column(Integer, unique=True, server_default=text("nextval('board_tag_id_seq')"))
-    data_added = Column(DateTime, default=func.now())
+    date_added = Column(DateTime, default=func.now())
     stimuli = relationship("StimulusBoard", back_populates="board")
     # gaze_datas: Mapped[List["GazeData"]] = relationship(back_populates='artwork')
 
@@ -30,6 +30,7 @@ class Stimulus(Base):
     name = Column(String(256))
     date_added = Column(DateTime, default=func.now())
     file_path = Column(String(256))
+    thumbnail_path = Column(String(256))
     stim_type = Column(Enum(StimType))
     boards = relationship("StimulusBoard", back_populates="stimulus")
 

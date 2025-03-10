@@ -38,7 +38,7 @@
             position: absolute;
             width: 5vw;
             height: 5vw;
-            z-index: 9999;
+            z-index: 100;
         }
 
         .upper-left {
@@ -74,6 +74,17 @@
             object-fit: contain;
         }
 
+        .modal-body {
+            z-index: 9999;
+        }
+
+        .stim-vid-icon {
+            position: absolute;
+            width: 10%;
+            top: 5%;
+            left: 5%;
+        }
+
     </style>
 </head>
 <body>
@@ -98,35 +109,33 @@
                         <div class="card stim-card justify-content-center border-0">
                             {% if stimulus.stim_type.value == 0 %}
                                 <img src="../{{ stimulus.file_path }}" class="card-img draggable-img" alt="..."
-                                     id="stimulusImg{{ stimulus.id }}" draggable="true" data-stimtype="0" data-src="{{ stimulus.file_path }}"
+                                     id="stimulusImg{{ stimulus.id }}" draggable="true" data-stimtype="0"
+                                     data-src="{{ stimulus.file_path }}"
                                      style="cursor: grab;">
+                            {% elif stimulus.stim_type.value == 1 %}
+                                <img src="../{{ stimulus.thumbnail_path }}" class="card-img draggable-img" alt="..."
+                                     id="stimulusImg{{ stimulus.id }}" draggable="true" data-stimtype="1"
+                                     data-src="../{{ stimulus.file_path }}"
+                                     style="cursor: grab;">
+                                {# add a video icon at the top left of its thumbnail #}
+                                <img src="../static/icons/play.png" class="card-img stim-vid-icon">
                             {% elif stimulus.stim_type.value == 2 %}
                                 <img src="https://img.youtube.com/vi/{{ stimulus.file_path }}/hqdefault.jpg"
-                                     class="card-img draggable-img" data-stimtype="2" data-src="{{ stimulus.file_path }}"
+                                     class="card-img draggable-img" data-stimtype="2"
+                                     data-src="{{ stimulus.file_path }}"
                                      alt="..." id="stimulusImg{{ stimulus.id }}" draggable="true"
                                      style="cursor: grab;">
                                 {# add a youtube icon at the top left of its thumbnail #}
-                                <img src="../static/icons/youtube.png" class="card-img"
-                                     style="width: 10%; position: absolute; top: 5%; left: 5%;">
+                                <img src="../static/icons/youtube.png" class="card-img stim-vid-icon">
                             {% endif %}
                         </div>
                     </div>
                 {% endfor %}
                 <div class="col-md-4" id="uploadCell" style="margin-top: 1vh">
                     <div class="card stim-card justify-content-center border-0">
-                        <input type="file" id="fileInput" onchange="upload_stim()" style="display: none">
                         <button class="btn btn-secondary card-image" id="uploadButton" style="height: 100%"
-                                onclick="document.getElementById('fileInput').click()">
+                                data-bs-toggle="modal" data-bs-target="#uploadModal">
                             <img src="../static/icons/upload.png" alt="Upload" style="width: 50%">
-                        </button>
-                    </div>
-                </div>
-
-                <div class="col-md-4" id="youtubeCell" style="margin-top: 1vh">
-                    <div class="card stim-card justify-content-center border-0">
-                        <button class="btn btn-secondary card-image" id="uploadButton" style="height: 100%" data-bs-toggle="modal"
-                                data-bs-target="#youtubeModal">
-                            <img src="../static/icons/youtube.png" alt="Upload" style="width: 50%">
                         </button>
                     </div>
                 </div>
@@ -161,28 +170,84 @@
     </div>
 </div>
 
-<div class="modal fade" id="youtubeModal" tabindex="-1" aria-labelledby="youtubeModalTag" aria-hidden="true">
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalTag" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="youtubeModalTag">Add Youtube Video</h5>
+                <h5 class="modal-title" id="uploadModalTag">Upload Stimulus</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="youtube_form">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">https://www.youtube.com/watch?v=</span>
-                        <input type="text" class="form-control" placeholder="Video ID" aria-label="Video ID"
-                               aria-describedby="basic-addon1" id="youtube_video_id">
-                    </div>
-                    <div id="error-message" class="text-danger mt-2"></div> <!-- Error message container -->
-                    <button type="submit" class="btn btn-success mt-3">Submit</button>
-                </form>
+                <div class="container">
+                    <form id="upload-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="row mb-5">
+                            <label for="fileType" class="col-form-label">File Type</label>
+                            <select class="form-select" id="fileType" aria-label="File Type"
+                                    onchange="changeInputGroup()">
+                                <option selected>Select File Type</option>
+                                <option value="0">Image</option>
+                                <option value="1">Video</option>
+                                <option value="2">Youtube</option>
+                            </select>
+                        </div>
+
+                        <div class="row mb-5" id="imageInputGroup" style="display: none;">
+                            <label for="imageFile" class="col-form-label col-sm-4">Upload Image</label>
+                            <div class="col-sm-8">
+                                <input type="file" class="form-control" id="imageFile" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="row mb-5" id="videoInputGroup" style="display: none;">
+                            <label for="videoFile" class="col-form-label col-sm-4">Upload Video</label>
+                            <div class="col-sm-8">
+                                <input type="file" class="form-control" id="videoFile" accept="video/*">
+                            </div>
+                        </div>
+
+
+                        <div class="row mb-5" id="youtubeInputGroup" style="display: none;">
+                            <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">https://www.youtube.com/watch?v=</span>
+                                <input type="text" class="form-control" placeholder="Video ID" aria-label="Video ID"
+                                       aria-describedby="basic-addon1" id="youtube_video_id">
+                            </div>
+                        </div>
+
+
+                        <div id="error-message" class="text-danger mt-2"></div> <!-- Error message container -->
+                        <button type="submit" class="btn btn-success mt-3">Submit</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+{#<div class="modal fade" id="youtubeModal" tabindex="-1" aria-labelledby="youtubeModalTag" aria-hidden="true">#}
+{#    <div class="modal-dialog modal-dialog-centered">#}
+{#        <div class="modal-content">#}
+{#            <div class="modal-header">#}
+{#                <h5 class="modal-title" id="youtubeModalTag">Add Youtube Video</h5>#}
+{#                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>#}
+{#            </div>#}
+{#            <div class="modal-body">#}
+{#                <form id="youtube_form">#}
+{#                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">#}
+{#                    <div class="input-group mb-3">#}
+{#                        <span class="input-group-text" id="basic-addon1">https://www.youtube.com/watch?v=</span>#}
+{#                        <input type="text" class="form-control" placeholder="Video ID" aria-label="Video ID"#}
+{#                               aria-describedby="basic-addon1" id="youtube_video_id">#}
+{#                    </div>#}
+{#                    <div id="error-message" class="text-danger mt-2"></div> <!-- Error message container -->#}
+{#                    <button type="submit" class="btn btn-success mt-3">Submit</button>#}
+{#                </form>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/create_board/create_board.js') }}"></script>
 </body>

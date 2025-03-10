@@ -77,6 +77,12 @@
                                         <img class="board-img position-absolute" src="{{ stimulus.file_path }}"
                                              alt="Card image cap"
                                              style="height: 100%">
+                                    {% elif stimulus.stim_type.value == 1 %}
+                                        <img class="board-img position-absolute"
+                                             src="{{ stimulus.thumbnail_path }}"
+                                             alt="Card image cap" style="height: 100%">
+                                        <img src="../static/icons/play.png" class="card-img"
+                                             style="width: 10%; position: absolute; top: 5%; left: 5%;">
                                     {% elif stimulus.stim_type.value == 2 %}
                                         <img class="board-img position-absolute"
                                              src="https://img.youtube.com/vi/{{ stimulus.file_path }}/hqdefault.jpg"

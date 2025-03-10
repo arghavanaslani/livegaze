@@ -12,6 +12,8 @@ import json
 import os
 import re
 import requests
+import ffmpeg
+import sys
 from boards.utils import get_unique_filename
 
 board_blueprint = Blueprint('boards', __name__)
@@ -19,14 +21,14 @@ board_blueprint = Blueprint('boards', __name__)
 
 @board_blueprint.route('/')
 def get_artworks():
-    boards = db.session.query(Board).all()
+    boards = db.session.query(Board).order_by(Board.date_added).all()
     return render_template('boards/artworks.html',
                            title='Artworks', boards=boards)
 
 
 @board_blueprint.route('/new', methods=['GET', 'POST'])
 def add_artwork():
-    stimuli = db.session.query(Stimulus).all()
+    stimuli = db.session.query(Stimulus).order_by(Stimulus.date_added).all()
     return render_template('boards/create_board.html', stimuli=stimuli)
     # form = ArtworkForm()
     # if form.validate_on_submit():
@@ -65,15 +67,39 @@ def save_board():
 def add_stim():
     stim_form = StimForm(formdata=CombinedMultiDict((request.files, request.form)))
     if stim_form.validate():
+        # check if the file is a valid image or video
+        if not stim_form.stim_file.data or not stim_form.stim_file.data.filename:
+            return Response(json.dumps({'error': 'Invalid file'}), mimetype='application/json', status=400)
+        if not stim_form.stim_file.data.content_type.startswith(('image/', 'video/')):
+            return Response(json.dumps({'error': 'Invalid file type'}), mimetype='application/json', status=400)
         uploaded_file = stim_form.stim_file.data
         file_name = secure_filename(uploaded_file.filename)
         file_path = os.path.join(current_app.config['STIMULI_UPLOAD_PATH'], file_name)
         file_path = get_unique_filename(file_path)
         uploaded_file.save(file_path)
-        stim = Stimulus(file_path=file_path)
+        thumbnail_path = file_path
+        if uploaded_file.content_type.startswith('video/'):
+            # create a thumbnail for the video
+            thumbnail_path = get_unique_filename(os.path.splitext(file_path)[0] + '.jpg')
+            probe = ffmpeg.probe(file_path)
+            time = float(probe['streams'][0]['duration']) // 2
+            width = probe['streams'][0]['width']
+            try:
+                (
+                    ffmpeg
+                    .input(file_path, ss=time)
+                    .filter('scale', width, -1)
+                    .output(thumbnail_path, vframes=1)
+                    .overwrite_output()
+                    .run(capture_stdout=True, capture_stderr=True)
+                )
+            except ffmpeg.Error as e:
+                print(e.stderr.decode(), file=sys.stderr)
+                sys.exit(1)
+        stim = Stimulus(file_path=file_path, thumbnail_path=thumbnail_path, stim_type=StimType.IMAGE if uploaded_file.content_type.startswith('image/') else StimType.VIDEO)
         db.session.add(stim)
         db.session.commit()
-        return Response(json.dumps({'stim_id': stim.id, 'stim_path': stim.file_path}),mimetype='application/json',status=200)
+        return Response(json.dumps({'stim_id': stim.id, 'stim_path': stim.file_path, 'thumbnail_path' : thumbnail_path}),mimetype='application/json',status=200)
     return Response(json.dumps({'error': 'Invalid file'}), mimetype='application/json',status=400)
 
 @board_blueprint.route('/submit_youtube', methods=['POST'])
@@ -89,7 +115,7 @@ def submit_youtube():
     if data['pageInfo']['totalResults'] == 0:
         return Response(json.dumps({'error': 'Invalid YouTube video id'}), mimetype='application/json', status=400)
 
-    stim = Stimulus(stim_type=StimType.YOUTUBE, file_path=video_id)
+    stim = Stimulus(stim_type=StimType.YOUTUBE, file_path=video_id, thumbnail_path='https://img.youtube.com/vi/' + video_id + '/hqdefault.jpg')
     db.session.add(stim)
     db.session.commit()
 
