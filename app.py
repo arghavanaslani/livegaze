@@ -6,6 +6,8 @@ import gaze_manager
 from gaze_manager.events import register_events
 from waldo.socketio_events import register_waldo_events
 from extensions.socket_io import socket_io
+from authentication.utils import set_app_for_auth
+from authentication.views import auth_blueprint
 
 from extensions import db_config
 
@@ -33,6 +35,7 @@ else:
 app.app_context().push()
 db_config.init_db(app)
 csrf.init_app(app)
+set_app_for_auth(app)
 
 # register socket io events
 register_events(socket_io)
@@ -42,6 +45,8 @@ app.register_blueprint(board_blueprint, url_prefix="/boards")
 app.register_blueprint(settings_blueprint, url_prefix="/settings")
 app.register_blueprint(waldo_blueprint, url_prefix="/waldo")
 app.register_blueprint(main_page_blueprint)
+app.register_blueprint(auth_blueprint, url_prefix="/auth")
+
 bootstrap = Bootstrap(app)
 gaze_manager.gaze_manager.update_thread.app = app
 

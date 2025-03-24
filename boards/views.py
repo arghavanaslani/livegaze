@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, current_app, redirect, url_for, Response, request
-from flask_wtf.file import FileField, FileAllowed, FileRequired
+from flask_login import login_required, current_user
 from werkzeug.datastructures import CombinedMultiDict
 
 from boards.utils import gen_artwork_img
@@ -20,6 +20,7 @@ board_blueprint = Blueprint('boards', __name__)
 
 
 @board_blueprint.route('/')
+@login_required
 def get_artworks():
     boards = db.session.query(Board).order_by(Board.date_added).all()
     return render_template('boards/artworks.html',
@@ -27,6 +28,7 @@ def get_artworks():
 
 
 @board_blueprint.route('/new', methods=['GET', 'POST'])
+@login_required
 def add_artwork():
     stimuli = db.session.query(Stimulus).order_by(Stimulus.date_added).all()
     return render_template('boards/create_board.html', stimuli=stimuli)
@@ -47,6 +49,7 @@ def add_artwork():
 
 
 @board_blueprint.route('/save_board', methods=['POST'])
+@login_required
 def save_board():
     stim_ids = request.form.getlist('stimuli[]')
     board_name = request.form.get('board_name')
@@ -64,6 +67,7 @@ def save_board():
 
 
 @board_blueprint.route('/upload_stim', methods=['POST'])
+@login_required
 def add_stim():
     stim_form = StimForm(formdata=CombinedMultiDict((request.files, request.form)))
     if stim_form.validate():
@@ -103,6 +107,7 @@ def add_stim():
     return Response(json.dumps({'error': 'Invalid file'}), mimetype='application/json',status=400)
 
 @board_blueprint.route('/submit_youtube', methods=['POST'])
+@login_required
 def submit_youtube():
     video_id = request.form.get('video_id')
     # check if YouTube video id is valid
@@ -123,6 +128,7 @@ def submit_youtube():
 
 
 @board_blueprint.route('/simple/<string:board_id>/<string:screen_height>/<string:screen_width>')
+@login_required
 def mapped_gaze_feed(board_id, screen_height, screen_width):
     artwork = db.session.query(Board).get(board_id)
     settings = db.session.query(Settings).first()
@@ -131,6 +137,7 @@ def mapped_gaze_feed(board_id, screen_height, screen_width):
 
 
 @board_blueprint.route('/torch/<string:board_id>/<string:screen_height>/<string:screen_width>')
+@login_required
 def get_torch_feed(board_id, screen_height, screen_width):
     artwork = db.session.query(Board).get(board_id)
     settings = db.session.query(Settings).first()
@@ -139,6 +146,7 @@ def get_torch_feed(board_id, screen_height, screen_width):
 
 
 @board_blueprint.route('/simple_js/<string:board_id>')
+@login_required
 def get_simple_js(board_id):
     board = db.session.query(Board).get(board_id)
     # stimuli_paths = [stimulus.stimulus.file_path for stimulus in board.stimuli]

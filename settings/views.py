@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, current_app, redirect, url_for, flash,request
+from flask_login import login_required, current_user
 
 from .models import Settings
 from extensions.db_config import db
@@ -16,6 +17,7 @@ def get_settings_model() -> Settings:
 
 
 @settings_blueprint.route('/')
+@login_required
 def get_settings():
     settings = db.session.query(Settings).first()
     active_shape = settings.pointer_id
@@ -25,6 +27,7 @@ def get_settings():
 
 
 @settings_blueprint.route('/update_slider', methods=['POST'])
+@login_required
 def update_pointer_size():
     slider_value = request.form.get('slider_value')
     settings = get_settings_model()
@@ -34,6 +37,7 @@ def update_pointer_size():
 
 
 @settings_blueprint.route('/update_option', methods=['POST'])
+@login_required
 def update_pointer_shape():
     selected_option = request.form.get('selected_option')
     settings = get_settings_model()

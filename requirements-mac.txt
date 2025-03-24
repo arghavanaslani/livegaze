@@ -141,3 +141,9 @@ zope.interface
 wtforms==3.1.1
 flask_wtf==1.2.1
 ffmpeg-python==0.2.0
+Flask-SocketIO~=5.3.6
+Flask-Bootstrap~=3.3.7.1
+Flask-Login~=0.6.3
+setuptools~=68.2.0
+graphviz~=0.20.3
+Flask-Bcrypt~=1.0.1
