@@ -6,7 +6,8 @@ var selected_marker_url = null
 function create_socket() {
 
 
-    const socket = io('http://127.0.0.1:5001');
+    const socket = io('http://127.0.0.1:5001/board');
+
     marker_parent = document.getElementById("markerParent")
 
     socket.on('connect', () => {

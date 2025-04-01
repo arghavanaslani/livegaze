@@ -29,7 +29,7 @@ class GazeUpdateThread(threading.Thread):
         self.time_since_last_db_update = time.time()
         self.time_since_last_board_update = time.time()
         while not self.exit_flag:
-            eye_trackers = redis_client.smembers(redis_constants.TRACKERS_SET)
+            eye_trackers =  redis_client.smembers(redis_constants.TRACKERS_SET)
             for eye_tracker in eye_trackers:
                 eye_tracker = eye_tracker.decode('utf-8')
                 data = redis_client.get(redis_constants.get_tracker_key(eye_tracker))
@@ -42,10 +42,6 @@ class GazeUpdateThread(threading.Thread):
             if time.time() - self.time_since_last_db_update > self.db_update_interval:
                 with self.app.app_context():
                     db.session.commit()
-            # gaze_data: GazeData = self.gaze_queue.get()
-            # if gaze_data.stim_id not in self.show_data:
-            #     self.show_data[gaze_data.stim_id] = dict()
-            # self.show_data[gaze_data.stim_id][gaze_data.camera_id] = gaze_data
 
             # TODO: update DB?
             if time.time() - self.time_since_last_board_update > self.board_update_interval:
@@ -59,11 +55,9 @@ class GazeUpdateThread(threading.Thread):
                         for camera_id, gaze_data in data.items():
                             data_dict = gaze_data.__dict__
                             data_to_send[camera_id] = data_dict
-                            # socket_io.socket_io.emit('gaze_data', data_dict, room="board_" + board)
                             # db.session.add(GazeDatabaseModel(GazeData(**data_dict)))
-                        socket_io.socket_io.emit('gaze_data', data_to_send, room="board_" + board)
-                    else:
-                        socket_io.socket_io.emit('gaze_data', {}, room="board_" + board)
+                        socket_io.socket_io.emit('gaze_data', data_to_send, room="board_" + board, namespace='/board')
+
 
 
     def stop_thread(self):

@@ -12,9 +12,8 @@ import json
 
 
 def register_events(socket_io):
-    @socket_io.on('new_gaze_data')
+    @socket_io.on('new_gaze_data', namespace='/tracker')
     def new_data_received(data):
-        # TODO: change variables to match the class
         data['timestamp'] = datetime.utcnow().timestamp()
         gaze_data = GazeData(**data)
         # gaze_data: GazeData = json.loads(data, object_hook=lambda d: GazeData(**d))
@@ -29,16 +28,16 @@ def register_events(socket_io):
         # # print(gaze_data.stim_id, gaze_data.camera_id, gaze_data.pos_x, gaze_data.pos_y)
         # gaze_manager.show_data[gaze_data.stim_id][gaze_data.camera_id] = gaze_data
 
-    @socket_io.on('subscribe_gaze_data')
+    @socket_io.on('subscribe_gaze_data', namespace='/board')
     def subscribe_gaze_data(data):
         board_id = str(data['board_id'])
         if not gaze_manager.update_thread.is_alive():
             gaze_manager.update_thread.start()
         redis_client.sadd(redis_constants.BOARD_TRACKERS_SET,board_id)
-        join_room("board_" + board_id)
+        join_room("board_" + board_id, namespace='/board')
         emit("subscribed to gaze data", {'room': "board_" + board_id})
 
-    @socket_io.on('ping')
+    @socket_io.on('ping', namespace='/tracker')
     def ping():
         print("ping received")
         emit('pong')
