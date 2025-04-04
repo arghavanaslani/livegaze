@@ -1,0 +1,48 @@
+{% extends 'base_v2.html' %}
+
+{% block head %}
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/trackers.js') }}"></script>
+{% endblock %}
+
+{% block title %}
+    Live Gaze - Eye Trackers
+{% endblock %}
+
+{% block navbar_title %}
+    Eye Trackers
+{% endblock %}
+
+{% block navbar_mid %}
+    <div class="col-md-6">
+    </div>
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid">
+        <div class="row mt-5">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Tracker ID</th>
+                    <th scope="col">Tracker Status</th>
+                </tr>
+            </thead>
+            <tbody id="trackers-list-body">
+                {% for tracker in trackers %}
+                    <tr id="tracker-{{ tracker.tracker_id }}">
+                        <th scope="row">{{ tracker.tracker_id }}</th>
+                        <td class="tracker-status">
+                            {% if tracker.tracker_state.value == 0 %} Inactive
+                            {% elif tracker.tracker_state.value == 1 %} Ready
+                            {% elif tracker.tracker_state.value == 2 %} Sending Data
+                            {% else %} Unknown
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+{% endblock %}
