@@ -41,6 +41,7 @@ def register_events(socket_io):
             updated_tracker_state(gaze_data.camera_id, TrackerState.sending_data)
             db.session.commit()
         redis_client.set(redis_constants.get_tracker_key(gaze_data.camera_id), json.dumps(data))
+        redis_client.set(redis_constants.get_dbtracker_key(gaze_data.camera_id), json.dumps(data))
         # db.session.add(GazeDatabaseModel(gaze_data))
         #
         #

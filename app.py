@@ -8,6 +8,7 @@ from authentication.utils import set_app_for_auth
 from authentication.views import auth_blueprint
 from trackers.views import trackers_blueprint
 from trackers.events import register_events as register_tracker_events
+from download_area.views import download_area_blueprint
 
 from extensions import db_config
 
@@ -46,6 +47,7 @@ def register_blueprints(app):
     app.register_blueprint(main_page_blueprint)
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
     app.register_blueprint(trackers_blueprint, url_prefix="/trackers")
+    app.register_blueprint(download_area_blueprint, url_prefix="/da")
 
 
 thread = None

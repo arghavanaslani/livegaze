@@ -4,10 +4,7 @@ import threading
 from .models import GazeData
 from extensions.db_config import redis_client
 from extensions import redis_constants
-from gaze_manager.models import GazeDatabaseModel
-from sqlalchemy.orm import sessionmaker
 from extensions.db_config import db
-from flask_socketio import send
 from extensions import socket_io
 import json
 import time
@@ -39,13 +36,15 @@ class GazeUpdateThread(threading.Thread):
                         self.show_data[gaze_data.stim_id] = dict()
                     self.show_data[gaze_data.stim_id][gaze_data.camera_id] = gaze_data
                     # print(gaze_data.stim_id, gaze_data.camera_id, gaze_data.pos_x, gaze_data.pos_y)
-            if time.time() - self.time_since_last_db_update > self.db_update_interval:
-                with self.app.app_context():
-                    db.session.commit()
+            # if time.time() - self.time_since_last_db_update > self.db_update_interval:
+            #     self.time_since_last_db_update = time.time()
+            #     with self.app.app_context():
+            #         db.session.commit()
 
             # TODO: update DB?
             if time.time() - self.time_since_last_board_update > self.board_update_interval:
                 boards = redis_client.smembers(redis_constants.BOARD_TRACKERS_SET)
+                self.time_since_last_board_update = time.time()
                 for board in boards:
                     board = board.decode('utf-8')
                     data = self.show_data.get(int(board), None)
@@ -55,13 +54,12 @@ class GazeUpdateThread(threading.Thread):
                         for camera_id, gaze_data in data.items():
                             data_dict = gaze_data.__dict__
                             data_to_send[camera_id] = data_dict
-                            # db.session.add(GazeDatabaseModel(GazeData(**data_dict)))
+                            # with self.app.app_context():
+                                # db.session.add(GazeDatabaseModel(gaze_data))
                         socket_io.socket_io.emit('gaze_data', data_to_send, room="board_" + board, namespace='/board')
 
 
 
     def stop_thread(self):
-        with self.app.app_context():
-            db.session.commit()
         self.exit_flag = True
 

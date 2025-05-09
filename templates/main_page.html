@@ -36,11 +36,14 @@
             height: 100%;
         }
     </style>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/main_page/record_manager.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
 
 
 {% block navbar_mid %}
     <div class="col-md-2">
+            <button class="btn btn-danger w-100" id="record_button" onclick="toggleRecord()">Record</button>
     </div>
     <div class="col-md-2">
         <a href="boards/new">
@@ -93,7 +96,7 @@
                                     </h5>
                                 </div>
                                 <div class="col-md-4 text-center">
-                                    <a href="/boards/{{ board.id }}">Edit</a>
+                                    <a href="/boards/simple_js/{{ board.id }}">Edit</a>
                                 </div>
                             </div>
                         </div>
