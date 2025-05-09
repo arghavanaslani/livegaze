@@ -31,12 +31,11 @@ class SqlUpdateDaemon(threading.Thread):
     def run(self):
         while not self.exit_flag:
             time.sleep(0.016)
-            record = self.redis_client.get(redis_constants.get_tracker_key("record"))
+            record = self.redis_client.get(redis_constants.RECORD)
             if not redis_constants.is_recording(record):
                 continue
             record_session_id = self.redis_client.get(redis_constants.RECORD_SESSION_ID).decode('utf-8')
             if time.time() - self.time_since_last_db_update > self.db_update_interval:
-                print("Updating DB")
                 self.db_session.commit()
                 self.time_since_last_db_update = time.time()
             if time.time() - self.time_since_last_board_update > self.board_update_interval:
