@@ -1,0 +1,66 @@
+{% extends 'base_v2.html' %}
+
+{% block title %}
+    LiveGaze - Download Area
+{% endblock %}
+{% block navbar_title %}
+    Download Area
+{% endblock %}
+
+{% block navbar_mid %}
+<div class="col-md-8">
+    </div>
+{% endblock %}
+
+
+{% block head %}
+
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid">
+        <div class="row mt-5">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Session ID</th>
+                    <th scope="col">Date Created</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody id="session-list-body">
+                {% for session in sessions %}
+                    <tr id="session-{{ session.id }}">
+                        <th scope="row">{{ session.id }}</th>
+                        <td class="session-date">
+                            {{ session.date_created.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('da.download_session', session_id=session.id) }}">
+                                <button class="btn btn-primary">Download</button>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('da.get_sessions', page= page - 1) }}">Previous</a>
+                    </li>
+
+                    {% for p in range(1, total_pages + 1) %}
+                        <li class="page-item {% if p == page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('da.get_sessions', page=p) }}">{{ p }}</a>
+                        </li>
+                    {% endfor %}
+
+                    <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('da.get_sessions', page = page + 1) }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+{% endblock %}

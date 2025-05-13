@@ -1,0 +1,148 @@
+{% extends 'boards/../../base.html' %}
+
+{% block app_context %}
+    <div class="row">
+        <div class="col-md-12">
+            <h1> {{ title }} </h1>
+        </div>
+    </div>
+    <hr>
+
+    <style>
+        .img-fluid {
+            max-width: 100%;
+            height: auto
+        }
+
+        radio-container label {
+            cursor: pointer;
+        }
+
+        .radio-container img {
+            width: 100px; /* Adjust the width as needed */
+            height: auto;
+            border: 2px solid transparent;
+        }
+
+        .radio-container input[type="radio"]:checked + img {
+            border-color: blue; /* Change border color for checked option */
+        }
+
+        {#.slider-container {#}
+        {#    display: flex;#}
+        {#    align-items: end;#}
+        {#    justify-content: center;#}
+        {#    height: 100%;#}
+
+        #}#}
+    </style>
+
+    <h4>Pointer Size</h4>
+    <div class="row vertical-align">
+        <div class="col-xs-2">
+            <img src="/flask_app/staticircle.png" id="image1" class="img-fluid">
+        </div>
+        <div class="col-xs-8 vcenter">
+            <div>
+                <label for="pointerSizeSlider"></label><input id="pointerSizeSlider" type="range" class="custom-range" min="0"
+                                                                                    max="1" step="0.001" value="{{ pointer_size }}">
+            </div>
+        </div>
+        <div class="col-xs-2">
+            <img src="/flask_app/staticcle.png" id="image2" class="img-fluid">
+        </div>
+    </div>
+
+    <h4> Pointer Shape</h4>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <div class="radio-container">
+{#                    {% for i in range(0,4) %}#}
+{#                        <label class="radio-inline {% if i==active_shape %} active {% endif %}">#}
+{#                            <input type="radio" name="pointer_shape_option" value={{ i }} {% if i==active_shape %} checked {% endif %}>#}
+{#                            <img #}
+{#                        </label>#}
+{#                    {% endfor %}#}
+                    <label class="col-xs-2 radio-inline {% if 0==active_shape %} active {% endif %}">
+                        <input type="radio" name="option" value="0" {% if 0==active_shape %} checked {% endif %}>
+                        <img src="/flask_app/staticair.png" alt="Option 1" class="img-fluid">
+                    </label>
+                    <label class="col-xs-2 radio-inline {% if 1==active_shape %} active {% endif %}">
+                        <input type="radio" name="option" value="1" {% if 1==active_shape %} checked {% endif %}>
+                        <img src="/flask_app/staticWire.png" alt="Option 2" class="img-fluid">
+                    </label>
+                    <label class="col-xs-2 radio-inline {% if 2==active_shape %} active {% endif %}">
+                        <input type="radio" name="option" value="2" {% if 2==active_shape %} checked {% endif %}>
+                        <img src="/flask_app/staticFull.png" alt="Option 3" class="img-fluid">
+                    </label>
+                    <label class="col-xs-2 radio-inline {% if 3==active_shape %} active {% endif %}">
+                        <input type="radio" name="option" value="3" {% if 3==active_shape %} checked {% endif %}>
+                        <img src="/flask_app/staticGradient.png" alt="Option 4" class="img-fluid">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+{#    <h4>Tag Size</h4>#}
+{#    <div class="row vertical-align">#}
+{#        <div class="col-xs-2">#}
+{#            <img src="/static/smallCircle.png" id="image1" class="img-fluid">#}
+{#        </div>#}
+{#        <div class="col-xs-8 vcenter">#}
+{#            <div>#}
+{#                <label for="slider"></label><input type="range" class="custom-range" id="slider" min="0"#}
+{#                                                   max="1" step="0.001">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="col-xs-2">#}
+{#            <img src="/static/bigCircle.png" id="image2" class="img-fluid">#}
+{#        </div>#}
+{#    </div>#}
+
+{% endblock %}
+
+{% block scripts %}
+{#    { { super() }}#}
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#pointerSizeSlider').on('input', function() {
+                const sliderValue = $(this).val();
+                $.ajax({
+                    type: 'POST',
+                    url: '/settings/update_slider',
+                    data: {slider_value: sliderValue},
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function() {
+            $('input[type="radio"]').change(function() {
+                var selectedOption = $(this).attr('value');
+                $.ajax({
+                    type: 'POST',
+                    url: '/settings/update_option',
+                    data: {selected_option: selectedOption},
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

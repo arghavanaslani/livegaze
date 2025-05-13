@@ -1,0 +1,114 @@
+{% extends 'base_v2.html' %}
+
+{% block title %}
+    LiveGaze
+{% endblock %}
+{% block navbar_title %}
+    LiveGaze
+{% endblock %}
+
+{% block head %}
+    <style>
+        .board-card {
+            height: 50vh;
+        }
+
+        .board-img {
+            height: 90%;
+            width: 100%;
+            padding: 1px;
+            object-fit: contain;
+        }
+
+        .board-card-body {
+            height: 8%;
+            padding-top: 1%;
+            padding-bottom: 0;
+        }
+
+        .position-absolute {
+            position: absolute;
+        }
+
+        .position-relative {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/main_page/record_manager.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
+
+{% block navbar_mid %}
+    <div class="col-md-2">
+            <button class="btn btn-danger w-100" id="record_button" onclick="toggleRecord()">Record</button>
+    </div>
+    <div class="col-md-2">
+        <a href="da/">
+            <button class="btn btn-secondary w-100">Data Download</button>
+        </a>
+    </div>
+    <div class="col-md-2">
+        <a href="boards/new">
+            <button class="btn btn-secondary w-100">Create Board</button>
+        </a>
+    </div>
+    <div class="col-md-2">
+        <a href="trackers">
+            <button class="btn btn-secondary w-100">Eye Trackers</button>
+        </a>
+    </div>
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid">
+        <div class="row">
+            {% for board in boards %}
+
+                <div class="col-md-6">
+                    <div class="card board-card mb-3">
+                        <a class="card-img-top board-img" href="boards/simple_js/{{ board.id }}" target="_blank">
+                            <div class="position-relative">
+                                {% for stimulus in board.stimuli %}
+                                    {% if stimulus.stim_type.value == 0 %}
+                                        <img class="board-img position-absolute" src="{{ stimulus.file_path }}"
+                                             alt="Card image cap"
+                                             style="height: 100%">
+                                    {% elif stimulus.stim_type.value == 1 %}
+                                        <img class="board-img position-absolute"
+                                             src="{{ stimulus.thumbnail_path }}"
+                                             alt="Card image cap" style="height: 100%">
+                                        <img src="../static/icons/play.png" class="card-img"
+                                             style="width: 10%; position: absolute; top: 5%; left: 5%;">
+                                    {% elif stimulus.stim_type.value == 2 %}
+                                        <img class="board-img position-absolute"
+                                             src="https://img.youtube.com/vi/{{ stimulus.file_path }}/hqdefault.jpg"
+                                             alt="Card image cap" style="height: 100%">
+                                        <img src="../static/icons/youtube.png" class="card-img"
+                                             style="width: 10%; position: absolute; top: 5%; left: 5%;">
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </a>
+                        <hr class="hr" style="margin-top:0; margin-bottom: 0%">
+                        <div class="card-body board-card-body container-fluid d-flex align-items-center">
+                            <div class="row w-100">
+                                <div class="col-md-8 d-flex align-items-center">
+                                    <h5 class="card-title"><a href="boards/simple_js/{{ board.id }}"
+                                                              class="link-body-emphasis link-underline-opacity-0">{{ board.name }}</a>
+                                    </h5>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <a href="/boards/simple_js/{{ board.id }}">Edit</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

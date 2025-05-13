@@ -1,0 +1,1 @@
+create sequence if not exists board_tag_id_seq start with 4;
