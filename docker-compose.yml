@@ -33,7 +33,7 @@ services:
     working_dir: /app
 
   postgres:
-    image: postgres:14
+    image: postgres:16
     container_name: postgres_db
     environment:
       POSTGRES_USER: postgres
