@@ -13,3 +13,5 @@ bind = os.environ.get('GUNICORN_BIND', '0.0.0.0:5100')
 forwarded_allow_ips = '*'
 
 secure_scheme_headers = { 'X-Forwarded-Proto': 'https' }
+
+capture_output = True

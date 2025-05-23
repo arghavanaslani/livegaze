@@ -9,6 +9,8 @@ from flask_app.authentication.views import auth_blueprint
 from flask_app.trackers.views import trackers_blueprint
 from flask_app.trackers.events import register_events as register_tracker_events
 from flask_app.download_area.views import download_area_blueprint
+import flask_app.settings
+
 
 from flask_app.extensions import db_config
 
@@ -27,7 +29,7 @@ def register_socketio_events(socket_io, app):
     register_events(socket_io)
     register_waldo_events(socket_io)
     register_tracker_events(socket_io)
-    socket_io.init_app(app)
+    socket_io.init_app(app, cors_allowed_origins="*")
 
 
 def init_parts(app):

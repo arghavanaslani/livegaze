@@ -19,4 +19,4 @@ COPY flask_app /app/flask_app
 EXPOSE 5100
 
 # Command to run Gunicorn
-CMD ["gunicorn", "-c", "flask_app/gunicorn_config.py", "flask_app.app:app", "-b", "0.0.0.0:5100"]
+CMD ["gunicorn", "-k", "eventlet","-c", "flask_app/gunicorn_config.py", "flask_app.app:app", "-b", "0.0.0.0:5100"]
