@@ -111,6 +111,9 @@
         {% elif stimulus.stim_type.value == 2 %}
             <iframe id="bgVideo" class="background" src="https://www.youtube.com/embed/{{ stimulus.file_path }}?autoplay=1&mute=1">
             </iframe>
+        {% elif stimulus.stim_type.value == 3 %}
+            <iframe id="bgWebpage" class="background" src="{{ stimulus.file_path }}" style="pointer-events: auto;">
+            </iframe>
         {% endif %}
     {% endfor %}
 </div>

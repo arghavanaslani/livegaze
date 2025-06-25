@@ -125,6 +125,19 @@ def submit_youtube():
 
     return Response(json.dumps({'stim_path': video_id, 'stim_id': stim.id}), mimetype='application/json', status=200)
 
+@board_blueprint.route('/submit_webpage', methods=['POST'])
+@login_required
+def submit_web():
+    web_url = request.form.get('web_url')
+    if not web_url or len(web_url) == 0:
+        return Response(json.dumps({'error': 'Please enter a valid URL'}), mimetype='application/json', status=400)
+    if not web_url.startswith(('http://', 'https://')):
+        web_url = 'http://' + web_url
+    stim = Stimulus(stim_type=StimType.WEBPAGE, file_path=web_url, thumbnail_path='https://www.google.com/s2/favicons?domain=' + web_url)
+    db.session.add(stim)
+    db.session.commit()
+    return Response(json.dumps({'stim_path': web_url, 'stim_id': stim.id}), mimetype='application/json', status=200)
+
 
 @board_blueprint.route('/simple/<string:board_id>/<string:screen_height>/<string:screen_width>')
 @login_required

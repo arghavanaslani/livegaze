@@ -22,6 +22,7 @@ class StimType(enum.Enum):
     IMAGE = 0
     VIDEO = 1
     YOUTUBE = 2
+    WEBPAGE = 3
 
 
 class Stimulus(Base):

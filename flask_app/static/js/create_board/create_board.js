@@ -32,6 +32,12 @@ function drop(event) {
             newElement.className = "stim-on-board";
             newElement.dataset.id = data.id.split("stimulusImg")[1];
             parent.appendChild(newElement);
+        } else if (data && data.type === "stimulus" && data.stimtype === "3") {
+            const newElement = document.createElement("iframe");
+            newElement.src = data.src;
+            newElement.className = "stim-on-board";
+            newElement.dataset.id = data.id.split("stimulusImg")[1];
+            parent.appendChild(newElement);
         }
     }
 }
@@ -94,6 +100,8 @@ function prepare_submit_youtube() {
             upload_video();
         } else if (filetype === "2") {
             upload_youtube();
+        } else if (filetype === "3") {
+            upload_webpage();
         }
     });
 }
@@ -107,29 +115,43 @@ function create_new_card(stim_id, stim_path, thumbnail_path, stim_type) {
     let innerCard = document.createElement('div');
     innerCard.classList = 'card stim-card justify-content-center border-0'
     newStim.appendChild(innerCard);
-
-    let cardImg = document.createElement('img');
-    cardImg.classList = 'card-img draggable-img'
-    cardImg.alt = '...'
-    cardImg.id = "stimulusImg" + stim_id
-    cardImg.draggable = this
-    console.log('stim_type', stim_type);
-    if (stim_type === 'image') {
-        console.log('image', stim_path);
-        cardImg.src = '../' + stim_path
-        cardImg.dataset.stimtype="0"
-        cardImg.dataset.src = stim_path
-    } else if (stim_type.includes('youtube')) {
-        console.log('youtube', stim_path);
-        cardImg.src = 'https://img.youtube.com/vi/' + stim_path + '/hqdefault.jpg'
-        cardImg.dataset.stimtype="2"
-        cardImg.dataset.src = stim_path
-    } if (stim_type === 'video') {
-        console.log('video', stim_path);
-        // remove the extension from the path add jpg
-        cardImg.dataset.src = '../' + stim_path
+    let cardImg;
+    if (stim_type !== 'webpage') {
+        cardImg = document.createElement('img');
+        cardImg.classList = 'card-img draggable-img'
+        cardImg.alt = '...'
+        cardImg.id = "stimulusImg" + stim_id
+        cardImg.draggable = this
+        console.log('stim_type', stim_type);
+        if (stim_type === 'image') {
+            console.log('image', stim_path);
+            cardImg.src = '../' + stim_path
+            cardImg.dataset.stimtype = "0"
+            cardImg.dataset.src = stim_path
+        } else if (stim_type.includes('youtube')) {
+            console.log('youtube', stim_path);
+            cardImg.src = 'https://img.youtube.com/vi/' + stim_path + '/hqdefault.jpg'
+            cardImg.dataset.stimtype = "2"
+            cardImg.dataset.src = stim_path
+        }
+        if (stim_type === 'video') {
+            console.log('video', stim_path);
+            // remove the extension from the path add jpg
+            cardImg.dataset.src = '../' + stim_path
+            cardImg.src = '../' + thumbnail_path
+            cardImg.dataset.stimtype = "1"
+        }
+    } else if (stim_type === 'webpage') {
+        cardImg = document.createElement('h5');
+        console.log('webpage', stim_path);
+        cardImg.classList = 'card-img draggable-img'
+        cardImg.id = "stimulusImg" + stim_id
+        cardImg.draggable = this
         cardImg.src = '../' + thumbnail_path
-        cardImg.dataset.stimtype="1"
+        cardImg.dataset.stimtype="3"
+        cardImg.dataset.src = stim_path
+        cardImg.tagName = 'h5'
+        cardImg.innerText = stim_path;
     }
     cardImg.style = "cursor: grab"
     innerCard.appendChild(cardImg);
@@ -143,6 +165,11 @@ function create_new_card(stim_id, stim_path, thumbnail_path, stim_type) {
         youtubeIcon.src = '../static/icons/play.png';
         youtubeIcon.classList = 'stim-vid-icon card-img';
         innerCard.appendChild(youtubeIcon);
+    } else if (stim_type === 'webpage') {
+        let webpageIcon = document.createElement('img');
+        webpageIcon.src = '../static/icons/webpage.png';
+        webpageIcon.classList = 'stim-vid-icon card-img';
+        innerCard.appendChild(webpageIcon);
     }
 
     add_draggable_functions(cardImg);
@@ -232,6 +259,28 @@ function upload_youtube() {
     });
 }
 
+function upload_webpage() {
+    let webUrl = $("#webpageEmbedUrl").val();
+
+    $.ajax({
+        type: "POST",
+        url: "submit_webpage",
+        data: {web_url: webUrl},
+        success: function (response) {
+            console.log(response);
+            $("#uploadModal").modal("hide");
+            $("#webpageEmbedUrl").val("");
+            console.log(response.stim_id, response.stim_path, 'webpage');
+            // create a card from the video and append it to the list of cards
+            create_new_card(response.stim_id, response.stim_path, response.stim_path, 'webpage');
+
+        },
+        error: function (response) {
+            $("#error-message").text("Error submitting video");
+        }
+    });
+}
+
 function save_board() {
     const parent = $("#board_parent")[0];
     const board_name = $("#board_name_input").val();
@@ -279,22 +328,32 @@ function changeInputGroup() {
     let imageInputGroup = document.getElementById("imageInputGroup");
     let videoInputGroup = document.getElementById("videoInputGroup");
     let youtubeInputGroup = document.getElementById("youtubeInputGroup");
+    let webpageInputGroup = document.getElementById("webpageEmbedInputGroup");
     if (selectedInputGroup=== "0") {
         imageInputGroup.style.display = "";
         videoInputGroup.style.display = "none";
         youtubeInputGroup.style.display = "none";
+        webpageInputGroup.style.display = "none";
     } else if (selectedInputGroup === "1") {
         imageInputGroup.style.display = "none";
         videoInputGroup.style.display = "";
         youtubeInputGroup.style.display = "none";
+        webpageInputGroup.style.display = "none";
     } else if (selectedInputGroup === "2") {
         imageInputGroup.style.display = "none";
         videoInputGroup.style.display = "none";
         youtubeInputGroup.style.display = "";
+        webpageInputGroup.style.display = "none";
+    } else if (selectedInputGroup === "3") {
+        imageInputGroup.style.display = "none";
+        videoInputGroup.style.display = "none";
+        youtubeInputGroup.style.display = "none";
+        webpageInputGroup.style.display = "";
     } else {
         imageInputGroup.style.display = "none";
         videoInputGroup.style.display = "none";
         youtubeInputGroup.style.display = "none";
+        webpageInputGroup.style.display = "none";
     }
 }
 

@@ -88,7 +88,13 @@
                                              alt="Card image cap" style="height: 100%">
                                         <img src="../static/icons/youtube.png" class="card-img"
                                              style="width: 10%; position: absolute; top: 5%; left: 5%;">
+                                    {% elif stimulus.stim_type.value == 3 %}
+                                        <h5 class="board-img position-absolute"
+                                            alt="Card image cap" style="height: 100%"> {{ stimulus.file_path }} </h5>
+                                        <img src="../static/icons/webpage.png" class="card-img"
+                                             style="width: 10%; position: absolute; top: 5%; left: 5%;">
                                     {% endif %}
+
                                 {% endfor %}
                             </div>
                         </a>
