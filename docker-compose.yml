@@ -5,7 +5,7 @@ services:
       dockerfile: flask_app/Dockerfile
     container_name: flask_app
     ports:
-      - "127.0.0.1:5100:5100"
+      - "5100:5100"
     environment:
       - FLASK_ENV=production
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
