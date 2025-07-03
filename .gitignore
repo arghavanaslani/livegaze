@@ -25,3 +25,6 @@ htmlcov/
 *,cover
 flask_app/config.py
 pkey.pem
+.env
+redis.conf
+LiveGazePair.pem
